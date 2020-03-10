@@ -29,12 +29,12 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Kooboo.Sites", "Kooboo\Koob
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "PreviewServer", "PreviewServer\PreviewServer.csproj", "{6DCD3428-8009-4196-A494-52B537F43B77}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "MyCustom.Module", "MyCustom.Module\MyCustom.Module.csproj", "{F6730D76-5DFD-4A23-8FAE-BC7DC75440AB}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{1DDE0F3A-CE23-4CA5-B1AA-43C21CA07D4C}"
 	ProjectSection(SolutionItems) = preProject
 		tools\moduleZip.bat = tools\moduleZip.bat
 	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sqlite.Menager.Module", "Sqlite.Menager.Module\Sqlite.Menager.Module.csproj", "{F09E31FF-3A37-4B23-8E00-EB0DFEF5F9F9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -90,10 +90,10 @@ Global
 		{6DCD3428-8009-4196-A494-52B537F43B77}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6DCD3428-8009-4196-A494-52B537F43B77}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6DCD3428-8009-4196-A494-52B537F43B77}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F6730D76-5DFD-4A23-8FAE-BC7DC75440AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F6730D76-5DFD-4A23-8FAE-BC7DC75440AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F6730D76-5DFD-4A23-8FAE-BC7DC75440AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F6730D76-5DFD-4A23-8FAE-BC7DC75440AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F09E31FF-3A37-4B23-8E00-EB0DFEF5F9F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F09E31FF-3A37-4B23-8E00-EB0DFEF5F9F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F09E31FF-3A37-4B23-8E00-EB0DFEF5F9F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F09E31FF-3A37-4B23-8E00-EB0DFEF5F9F9}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
