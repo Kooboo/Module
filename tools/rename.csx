@@ -1,4 +1,4 @@
-var fileExtensions = new[] { ".cs", ".cshtml", ".js", ".csproj", ".sln", ".xml", ".config", "Dockerfile" };
+var fileExtensions = new[] { ".cs", ".cshtml", ".html", ".js", ".csproj", ".sln", ".xml", ".config", "Dockerfile" };
 var excludeDirs = new[] { ".git" };
 
 Console.WriteLine("请输入被替换的字符串，默认‘MyCustom’：");
@@ -53,7 +53,7 @@ void Rename(string rootDir)
     }
 }
 
-Rename(".\\");
+Rename("..\\");
 
 Console.WriteLine("处理成功，按任意键退出");
 Console.ReadKey();
