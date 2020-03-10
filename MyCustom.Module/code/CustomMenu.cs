@@ -12,7 +12,7 @@ namespace MyCustom.Module
 
         public string Icon => "";
 
-        public string Url => @"/testpage.html";
+        public string Url => @"mycustom.module/testpage.html";
 
         public int Order => 1;
 

@@ -6,6 +6,7 @@ using Kooboo.Render.Controller;
 using Kooboo.Web;
 using System;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace PreviewServer
@@ -14,8 +15,7 @@ namespace PreviewServer
     {
         static void Main(string[] args)
         {
-            LoadModuleDll();
-            ModuleFile.ModuleRoots.Add(Path.Combine(AppContext.BaseDirectory,"view"));
+            AddModule();
 
             Kooboo.Lib.Compatible.CompatibleManager.Instance.Framework.RegisterEncoding();
             GlobalSettings.RootPath = Kooboo.Data.AppSettings.DatabasePath;
@@ -38,25 +38,24 @@ namespace PreviewServer
             Kooboo.Lib.Compatible.CompatibleManager.Instance.Framework.ConsoleWait();
         }
 
-        private static void LoadModuleDll()
+        private static void AddModule()
         {
-            var path = AppDomain.CurrentDomain.BaseDirectory;
-            var alldlls = Directory.GetFiles(path, "*.dll", SearchOption.TopDirectoryOnly);
-            foreach (var name in alldlls)
+            var slnDir= Path.GetFullPath("../../../../");
+            ModuleFile.ModuleRoots.Add(slnDir);
+            var dirs = Directory.GetDirectories(slnDir);
+            foreach (var item in dirs.Where(s=>s.ToLower().EndsWith("module")))
             {
-                string dllname = name.Substring(path.Length);
+                var dllPath = Path.Combine(item, "bin", "Debug", "netstandard2.0");
 
-                if (string.IsNullOrWhiteSpace(dllname))
+                if (Directory.Exists(dllPath))
                 {
-                    continue;
-                }
+                    var alldlls = Directory.GetFiles(dllPath, "*.dll", SearchOption.TopDirectoryOnly);
+                    foreach (var name in alldlls)
+                    {
 
-                dllname = dllname.Trim('\\').Trim('/');
-
-                if (dllname.EndsWith(".dll"))
-                {
-                    var otherAssembly = Assembly.LoadFile(name);
-                    AssemblyLoader.AddAssembly(otherAssembly);
+                        var otherAssembly = Assembly.LoadFile(name);
+                        AssemblyLoader.AddAssembly(otherAssembly);
+                    }
                 }
             }
         }

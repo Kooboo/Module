@@ -15,7 +15,7 @@
   </ItemGroup>
 
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="if $(ConfigurationName) == Release call $(ProjectDir)tools\moduleZip.bat $(ProjectDir) $(ProjectName)" />
+    <Exec Command="if $(ConfigurationName) == Release call $(SolutionDir)tools\moduleZip.bat $(ProjectDir) $(ProjectName) $(SolutionDir)" />
   </Target>
 
 </Project>
