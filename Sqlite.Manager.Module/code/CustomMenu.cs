@@ -8,11 +8,11 @@ namespace MyCustom.Module
 {
     public class CustomMenu : IFeatureMenu
     {
-        public string Name => "sqlite.menager";
+        public string Name => "sqlite.manager";
 
         public string Icon => "";
 
-        public string Url => @"sqlite.menager.module/testpage.html";
+        public string Url => @"sqlite.manager.module/testpage.html";
 
         public int Order => 1;
 

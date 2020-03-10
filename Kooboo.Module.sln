@@ -34,7 +34,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{1DDE0F3A
 		tools\moduleZip.bat = tools\moduleZip.bat
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sqlite.Menager.Module", "Sqlite.Menager.Module\Sqlite.Menager.Module.csproj", "{F09E31FF-3A37-4B23-8E00-EB0DFEF5F9F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Sqlite.Manager.Module", "Sqlite.Manager.Module\Sqlite.Manager.Module.csproj", "{670BD8E9-9401-47B7-A733-5D231F0F0B71}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -90,10 +90,10 @@ Global
 		{6DCD3428-8009-4196-A494-52B537F43B77}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{6DCD3428-8009-4196-A494-52B537F43B77}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{6DCD3428-8009-4196-A494-52B537F43B77}.Release|Any CPU.Build.0 = Release|Any CPU
-		{F09E31FF-3A37-4B23-8E00-EB0DFEF5F9F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{F09E31FF-3A37-4B23-8E00-EB0DFEF5F9F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{F09E31FF-3A37-4B23-8E00-EB0DFEF5F9F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{F09E31FF-3A37-4B23-8E00-EB0DFEF5F9F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{670BD8E9-9401-47B7-A733-5D231F0F0B71}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{670BD8E9-9401-47B7-A733-5D231F0F0B71}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{670BD8E9-9401-47B7-A733-5D231F0F0B71}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{670BD8E9-9401-47B7-A733-5D231F0F0B71}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
