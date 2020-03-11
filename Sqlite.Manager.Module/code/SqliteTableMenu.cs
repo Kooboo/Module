@@ -13,7 +13,7 @@ namespace Sqlite.Menager.Module.code
 
         public string Icon => "";
 
-        public string Url => "sqlite.manager.module/testpage.html";
+        public string Url => "sqlite.manager.module/sqlite.html";
 
         public int Order => 0;
 

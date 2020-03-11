@@ -1,1 +1,0 @@
-﻿alert("js is running")

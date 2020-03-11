@@ -1,0 +1,97 @@
+﻿<!-- #layout name=blank -->
+<div id="app">
+  <div class="page-header">
+    <h1 class="title">Sqlite</h1>
+  </div>
+  <kb-breadcrumb :breads="breads"></kb-breadcrumb>
+  <div class="navbar navbar-default">
+    <div class="container-fluid">
+      <a @click="createTable" class="btn green navbar-btn">Create Table</a>
+      <a
+        v-show="selectedRows.length"
+        class="btn red navbar-btn"
+        @click="onDelete"
+        >Delete</a
+      >
+    </div>
+  </div>
+  <kb-table :data="tableData" show-select :selected.sync="selectedRows">
+    <kb-table-column :label="Kooboo.text.common.name">
+      <template v-slot="row">
+        <a
+          class="btn btn-link"
+          @click.stop=""
+          :href="Kooboo.Route.Get(Kooboo.Route.Database.DataPage, {table: row})"
+        >
+          {{ row }}
+        </a>
+      </template>
+    </kb-table-column>
+    <kb-table-column align="right">
+      <template v-slot="row">
+        <a
+          class="btn btn-ms blue"
+          @click.stop=""
+          :href="Kooboo.Route.Get(Kooboo.Route.Database.ColumnsPage, {table: row})"
+        >
+          {{ Kooboo.text.common.setting }}
+        </a>
+      </template>
+    </kb-table-column>
+  </kb-table>
+</div>
+
+<script src="js/main.js"></script>
+<script>
+  (function() {
+    Kooboo.loadJS([
+      "/_Admin/Scripts/components/kbBreadcrumb.js",
+      "/_Admin/Scripts/components/kbTable.js",
+      "/_Admin/Scripts/components/kbForm.js"
+    ]);
+    var vm;
+    new Vue({
+      el: "#app",
+      data: function() {
+        vm = this;
+        return {
+          breads: [
+            {
+              name: "SITES"
+            },
+            {
+              name: "DASHBOARD"
+            },
+            {
+              name: "Sqlite"
+            }
+          ],
+          tableData: [],
+          selectedRows: [],
+          siteId: Kooboo.getQueryString("SiteId")
+        };
+      },
+      mounted: function() {
+        vm.getTableList();
+      },
+      methods: {
+        onDelete() {
+          alert("delete");
+        },
+        getTableList() {
+          var url = "/Sqlite/Tables?SiteId=" + this.siteId;
+          vm.$httpClient.get(url).then(function(res) {
+            if (res.data.success) {
+              vm.tableData = res.data.model;
+            }
+          });
+        },
+        createTable() {
+          var url = "Sqlite/CreateTable?SiteId=" + this.siteId;
+          var name = "tetsaaaaa";
+          vm.$httpClient.post(url, { name: name }).then(function(data) {});
+        }
+      }
+    });
+  })();
+</script>
