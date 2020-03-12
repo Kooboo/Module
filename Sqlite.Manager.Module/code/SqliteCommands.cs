@@ -43,7 +43,7 @@ namespace Sqlite.Menager.Module.code
             sb.AppendLine("END TRANSACTION;");
             param = new
             {
-                id = Guid.NewGuid(),
+                id = Guid.NewGuid().ToString(),
                 tableName = table,
                 schema = JsonHelper.Serialize(columns)
             };
