@@ -1,4 +1,4 @@
-﻿<!-- #layout name=blank -->
+﻿﻿<!-- #layout name=blank -->
 <div id="app">
   <div class="page-header">
     <h1 class="title">Sqlite</h1>
@@ -78,7 +78,7 @@
   </div>
 </div>
 
-<script src="js/main.js"></script>
+<script src="pages/js/main.js"></script>
 <script>
   (function() {
     Kooboo.loadJS([
@@ -125,7 +125,6 @@
                     "/_api/Sqlite/IsUniqueTableName?SiteId=" +
                     Kooboo.getQueryString("SiteId"),
                   data: function() {
-                    debugger;
                     return {
                       name: vm.createTableModel.name
                     };

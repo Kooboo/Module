@@ -87,7 +87,7 @@ window.koobooModule = {
     return Kooboo.loadJS(newPath);
   }
 };
-koobooModule.loadJS(["js/lib/axios.min.js"]);
+koobooModule.loadJS(["pages/js/lib/axios.min.js"]);
 
 const KbHttpClient = {
   install: function(Vue, options) {
