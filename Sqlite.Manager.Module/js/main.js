@@ -1,9 +1,10 @@
 window.koobooModule = {
   getModuleName: function() {
     if (location.pathname) {
-      return location.pathname
+      var name = location.pathname
         .replace("/_Admin/", "")
         .replace(/\/.*\.html.*/, "");
+      return name;
     }
   },
   path: {
@@ -63,6 +64,19 @@ window.koobooModule = {
       }
     }
   },
+  recombineUrl: function(url, param) {
+    var keys = Object.keys(param);
+    if (keys.length) {
+      keys.forEach(function(key, index) {
+        if (index === 0) {
+          url = url + "?" + key + "=" + param[key];
+        } else {
+          url = url + "&" + key + "=" + param[key];
+        }
+      });
+    }
+    return url;
+  },
   getModuleRootPath: function() {
     return "/_Admin/" + koobooModule.getModuleName();
   },
@@ -79,9 +93,15 @@ const KbHttpClient = {
   install: function(Vue, options) {
     Vue.prototype.$httpClient = {
       post: function(url, data, param) {
+        if (param) {
+          url = koobooModule.recombineUrl(url, param);
+        }
         return axios.post(url, data);
       },
       get: function(url, param) {
+        if (param) {
+          url = koobooModule.recombineUrl(url, param);
+        }
         return axios.get(url);
       }
     };
@@ -90,15 +110,23 @@ const KbHttpClient = {
 Vue.use(KbHttpClient);
 
 axios.interceptors.request.use(
-  function(config) {
-    if (config.url.indexOf("/") === 0) {
-      config.url = config.url.slice(1);
+  function(request) {
+    if (request.url.indexOf("/") === 0) {
+      request.url = request.url.slice(1);
     }
-    config.url = location.origin + "/_api/" + config.url;
-    return config;
+    request.url = location.origin + "/_api/" + request.url;
+    return request;
   },
   function(error) {
     // 对请求错误做些什么
+    return Promise.reject(error);
+  }
+);
+axios.interceptors.response.use(
+  function(response) {
+    return response;
+  },
+  function(error) {
     return Promise.reject(error);
   }
 );
