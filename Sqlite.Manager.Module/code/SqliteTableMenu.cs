@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using Kooboo.Data.Context;
 using Kooboo.Data.Language;
 using Kooboo.Web.Menus;
@@ -13,7 +13,7 @@ namespace Sqlite.Menager.Module.code
 
         public string Icon => "";
 
-        public string Url => "sqlite.manager.module/index.html";
+        public string Url => "sqlite.manager.module/sqlite.html";
 
         public int Order => 0;
 
