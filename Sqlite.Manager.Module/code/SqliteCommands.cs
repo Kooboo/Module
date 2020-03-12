@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Kooboo.Lib.Helper;
 using Kooboo.Sites.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Kooboo.Lib.Helper;
 
 namespace Sqlite.Menager.Module.code
 {
@@ -12,8 +12,6 @@ namespace Sqlite.Menager.Module.code
         private const string IndexNameFormat = "idx_{0}_{1}";
         private const string UniqueNameFormat = "idx_uniq_{0}_{1}";
         public const string KoobooSystemTable = "_kooboo_sys_setting";
-        public const string DefaultIdSchema =
-            "[{\"Name\":\"_id\",\"IsPrimaryKey\":true,\"IsIndex\":true,\"IsUnique\":true,\"DataType\":\"TEXT\",\"IsSystem\":true}]";
 
         public static string ListTables()
         {
@@ -27,23 +25,37 @@ namespace Sqlite.Menager.Module.code
 
         public static string CreateSystemTable()
         {
-            var columns = new[]
+            var columns = new List<DbTableColumn>
             {
-                GetDefaultIdColumn(),
-                new DbTableColumn { Name = "table_name", IsIndex = true, IsUnique = true,  DataType = "TEXT" },
+                new DbTableColumn { Name = "table_name", IsIndex = true, IsUnique = true, DataType = "TEXT", Length = 1024 },
                 new DbTableColumn { Name = "schema", DataType = "TEXT" },
             };
             return CreateTableInternal(KoobooSystemTable, columns);
         }
 
-        public static string CreateTable(string table)
+        public static string CreateTableAndSchema(string table, out object param, List<DbTableColumn> columns = null)
         {
-            return CreateTableInternal(table, new[] { GetDefaultIdColumn() });
+            columns = columns ?? new List<DbTableColumn>();
+            var sb = new StringBuilder();
+            sb.AppendLine("BEGIN TRANSACTION;");
+            sb.AppendLine(CreateTableInternal(table, columns));
+            sb.AppendLine($"INSERT INTO {KoobooSystemTable}(_id, table_name, schema) VALUES(@id, @tableName, @schema);");
+            sb.AppendLine("END TRANSACTION;");
+            param = new
+            {
+                id = Guid.NewGuid(),
+                tableName = table,
+                schema = JsonHelper.Serialize(columns)
+            };
+
+            return sb.ToString();
         }
 
-        public static string DeleteTables(IEnumerable<string> tables)
+        public static string DeleteTablesAndSchema(string[] tables)
         {
-            return string.Join("", tables.Select(table => $"DROP TABLE {table};"));
+            var drops = string.Join("", tables.Select(table => $"DROP TABLE {table};"));
+            var schemas = $"DELETE FROM {KoobooSystemTable} WHERE table_name in (\"" + string.Join("\",\"", tables) + "\");";
+            return drops + "\r\n" + schemas;
         }
 
         public static string GetSchema(string table)
@@ -59,16 +71,11 @@ namespace Sqlite.Menager.Module.code
                 schema = JsonHelper.Serialize(columns),
             };
 
-            return $"UPDATE {KoobooSystemTable} SET schema = @schema WHERE table_name = @tableName";
+            return $"UPDATE {KoobooSystemTable} SET schema = @schema WHERE table_name = @tableName;";
         }
 
         public static string UpdateColumn(string table, List<DbTableColumn> originalColumns, List<DbTableColumn> columns)
         {
-            if (columns.All(x => x.Name != Kooboo.IndexedDB.Dynamic.Constants.DefaultIdFieldName))
-            {
-                columns.Insert(0, GetDefaultIdColumn());
-            }
-
             var sb = new StringBuilder();
             sb.AppendLine("BEGIN TRANSACTION;");
             var oldTable = $"_old_{table}_{DateTime.Now:yyyyMMddHHmmss}";
@@ -100,6 +107,23 @@ namespace Sqlite.Menager.Module.code
             return sb.ToString();
         }
 
+        public static string GetTotalCount(string table)
+        {
+            return $"SELECT COUNT(1) AS total FROM {table};";
+        }
+
+        public static string GetPagedData(string table, int totalskip, int pageSize, string sortfield)
+        {
+            var orderByDesc = string.IsNullOrWhiteSpace(sortfield) ? "" : $"ORDER BY {sortfield} DESC";
+            return $"SELECT * FROM {table} {orderByDesc} LIMIT {totalskip},{pageSize};";
+        }
+
+        public static string DeleteData(string table, List<Guid> ids)
+        {
+            var idString = string.Join("\",\"", ids);
+            return $"DELETE FROM {table} WHERE _id IN (\"{idString}\");";
+        }
+
         private static DbTableColumn GetDefaultIdColumn()
         {
             return new DbTableColumn
@@ -108,8 +132,9 @@ namespace Sqlite.Menager.Module.code
                 IsPrimaryKey = true,
                 IsIndex = true,
                 IsUnique = true,
-                DataType = "TEXT",
-                IsSystem = true
+                DataType = "String",
+                IsSystem = true,
+                Length = 64
             };
         }
 
@@ -135,8 +160,13 @@ namespace Sqlite.Menager.Module.code
             return $"\"{column.Name}\" {dataType}{length}";
         }
 
-        private static string CreateTableInternal(string table, IEnumerable<DbTableColumn> columns)
+        private static string CreateTableInternal(string table, List<DbTableColumn> columns)
         {
+            if (columns.All(x => x.Name != Kooboo.IndexedDB.Dynamic.Constants.DefaultIdFieldName))
+            {
+                columns.Insert(0, GetDefaultIdColumn());
+            }
+
             var sb = new StringBuilder();
             sb.AppendLine($"CREATE TABLE \"{table}\"(");
 

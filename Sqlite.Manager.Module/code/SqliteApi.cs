@@ -3,7 +3,7 @@
 using Kooboo.Api;
 using Kooboo.Lib.Helper;
 using Kooboo.Sites.Models;
-using Kooboo.Sites.Scripting.Global.Sqlite;
+using Kooboo.Web.ViewModel;
 using KScript;
 using System;
 using System.Collections.Generic;
@@ -14,6 +14,8 @@ namespace Sqlite.Menager.Module.code
 {
     public class SqliteApi : IApi
     {
+        private const string DefaultIdFieldName = Kooboo.IndexedDB.Dynamic.Constants.DefaultIdFieldName;
+
         public string ModelName => "Sqlite";
 
         public bool RequireSite => true;
@@ -22,7 +24,7 @@ namespace Sqlite.Menager.Module.code
 
         public List<string> Tables(ApiCall call)
         {
-            var db = new k(call.Context).Sqlite;
+            var db = call.GetSqliteDatabase();
             var tables = db.Query(Cmd.ListTables());
             return tables.Select(x => (string)x.Values["name"]).ToList();
         }
@@ -34,85 +36,263 @@ namespace Sqlite.Menager.Module.code
                 throw new Exception(Kooboo.Data.Language.Hardcoded.GetValue("Only Alphanumeric are allowed to use as a table", call.Context));
             }
 
-            var db = new k(call.Context).Sqlite;
-            EnsureSystemTableCreated(db);
+            var db = call.GetSqliteDatabase();
+            db.EnsureSystemTableCreated();
 
-            // create table
-            db.Execute(Cmd.CreateTable(name));
-            // add schema
-            db.GetTable(Cmd.KoobooSystemTable).add(new Dictionary<string, object>
-            {
-                { "table_name", name },
-                { "schema", Cmd.DefaultIdSchema },
-            });
+            // create table and schema
+            db.Execute(Cmd.CreateTableAndSchema(name, out var param), param);
         }
 
         public void DeleteTables(string names, ApiCall call)
         {
-            var db = new k(call.Context).Sqlite;
+            var db = call.GetSqliteDatabase();
             var tables = JsonHelper.Deserialize<string[]>(names);
             if (tables.Length <= 0)
             {
                 return;
             }
 
-            db.Execute(Cmd.DeleteTables(tables));
+            db.Execute(Cmd.DeleteTablesAndSchema(tables));
         }
 
         public bool IsUniqueTableName(string name, ApiCall call)
         {
-            var db = new k(call.Context).Sqlite;
-            return !IsTableExists(db, name);
+            var db = call.GetSqliteDatabase();
+            return !db.IsTableExists(name);
         }
 
         public List<DbTableColumn> Columns(string table, ApiCall call)
         {
             var db = new k(call.Context).Sqlite;
-            var columns = GetAllColumns(table, db);
-            return columns.Where(x =>
-                    x.Name != Kooboo.IndexedDB.Dynamic.Constants.DefaultIdFieldName &&
-                    x.Name != Cmd.KoobooSystemTable)
-                .ToList();
+            var columns = db.GetAllColumns(table);
+            return columns.Where(x => x.Name != DefaultIdFieldName).ToList();
         }
 
         public void UpdateColumn(string tablename, List<DbTableColumn> columns, ApiCall call)
         {
-            var db = new k(call.Context).Sqlite;
-
-            var originalColumns = GetAllColumns(tablename, db);
-
-            // update table
-            db.Execute(Cmd.UpdateColumn(tablename, originalColumns, columns));
-
-            // update schema
-            db.Execute(Cmd.UpdateSchema(tablename, columns, out var param), param);
-        }
-
-        private void EnsureSystemTableCreated(SqliteDatabase db)
-        {
-            if (!IsTableExists(db, Cmd.KoobooSystemTable))
+            var db = call.GetSqliteDatabase();
+            var originalColumns = db.GetAllColumns(tablename);
+            // table not exists, create
+            if (originalColumns.Count <= 0)
             {
-                db.Execute(Cmd.CreateSystemTable());
+                db.Execute(Cmd.CreateTableAndSchema(tablename, out var param, columns), param);
+                return;
+            }
+
+            // updat table
+            CompareColumnDifferences(originalColumns, columns, out var shouldUpdateTable, out var shouldUpdateSchema);
+
+            if (shouldUpdateTable)
+            {
+                db.Execute(Cmd.UpdateColumn(tablename, originalColumns, columns));
+            }
+
+            if (shouldUpdateSchema)
+            {
+                db.Execute(Cmd.UpdateSchema(tablename, columns, out var param), param);
             }
         }
 
-        private bool IsTableExists(SqliteDatabase db, string name)
+        public PagedListViewModel<List<DataValue>> Data(string table, ApiCall call)
         {
-            var tables = db.Query(Cmd.TableExists(name));
-            return tables.Any(x => x.Values.Count > 0);
-        }
-
-        private static List<DbTableColumn> GetAllColumns(string table, SqliteDatabase db)
-        {
-            var schema = db.Query(Cmd.GetSchema(table));
-            if (schema.Length <= 0)
+            var db = call.GetSqliteDatabase();
+            var sortfield = call.GetValue("sort", "orderby", "order");
+            // verify sortfield. 
+            var columns = db.GetAllColumns(table);
+            if (sortfield != null)
             {
-                return new List<DbTableColumn>();
+                var col = columns.FirstOrDefault(o => o.Name == sortfield);
+                if (col == null)
+                {
+                    sortfield = null;
+                }
             }
 
-            var columString = (string)schema[0].Values["schema"];
-            var columns = JsonHelper.Deserialize<List<DbTableColumn>>(columString);
-            return columns;
+            if (sortfield == null)
+            {
+                var primarycol = columns.FirstOrDefault(o => o.IsPrimaryKey);
+                if (primarycol != null)
+                {
+                    sortfield = primarycol.Name;
+                }
+            }
+
+
+            var pager = ApiHelper.GetPager(call, 30);
+
+            var result = new PagedListViewModel<List<DataValue>>();
+
+            var totalcount = db.GetTotalCount(table);
+
+            result.TotalCount = totalcount;
+            result.TotalPages = ApiHelper.GetPageCount(totalcount, pager.PageSize);
+            result.PageNr = pager.PageNr;
+            result.PageSize = pager.PageSize;
+
+            var totalskip = 0;
+            if (pager.PageNr > 1)
+            {
+                totalskip = (pager.PageNr - 1) * pager.PageSize;
+            }
+
+            var data = db.Query(Cmd.GetPagedData(table, totalskip, pager.PageSize, sortfield));
+
+            if (data.Any())
+            {
+                result.List = ConvertDataValue(data, columns);
+            }
+
+            return result;
+        }
+
+        public List<DatabaseItemEdit> GetEdit(string tablename, string id, ApiCall call)
+        {
+            var db = call.GetSqliteDatabase();
+            var result = new List<DatabaseItemEdit>();
+
+            var obj = db.GetTable(tablename).get(id);
+            var cloumns = db.GetAllColumnsForItemEdit(tablename);
+
+            foreach (var model in cloumns)
+            {
+                // get value
+                if (obj != null && obj.Values.ContainsKey(model.Name))
+                {
+                    var value = obj.Values[model.Name];
+                    model.Value = model.DataType.ToLower() == "bool"
+                        ? Convert.ChangeType(value, typeof(bool))
+                        : value;
+                }
+
+                result.Add(model);
+            }
+
+            return result;
+        }
+
+        public Guid UpdateData(string tablename, Guid id, List<DatabaseItemEdit> values, ApiCall call)
+        {
+            var db = call.GetSqliteDatabase();
+            var dbTable = db.GetTable(tablename);
+            var columns = db.GetAllColumnsForItemEdit(tablename);
+
+            // edit
+            if (id != Guid.Empty)
+            {
+                var obj = dbTable.get(id).Values;
+                if (obj == null)
+                {
+                    return Guid.Empty;
+                }
+
+                foreach (var item in columns.Where(o => !o.IsSystem))
+                {
+                    var value = values.Find(o => o.Name.ToLower() == item.Name.ToLower());
+                    if (value == null)
+                    {
+                        obj.Remove(item.Name);
+                    }
+                    else
+                    {
+                        obj[item.Name] = Kooboo.Lib.Reflection.TypeHelper.ChangeType(value.Value, item.GetClrType());
+                    }
+                }
+
+                dbTable.update(id, obj);
+                return id;
+            }
+
+            // add
+            var add = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
+            foreach (var item in columns.Where(o => !o.IsSystem))
+            {
+                if (!item.IsIncremental)
+                {
+                    var value = values.Find(o => o.Name.ToLower() == item.Name.ToLower());
+                    if (value == null)
+                    {
+                        add.Remove(item.Name);
+                    }
+                    else
+                    {
+                        add[item.Name] = Kooboo.Lib.Reflection.TypeHelper.ChangeType(value.Value, item.GetClrType());
+                    }
+                }
+            }
+
+            return Guid.Parse(dbTable.add(add).ToString());
+        }
+
+        public void DeleteData(string tablename, List<Guid> values, ApiCall call)
+        {
+            var db = call.GetSqliteDatabase();
+
+            db.Execute(Cmd.DeleteData(tablename, values));
+        }
+
+        private static List<List<DataValue>> ConvertDataValue(IDynamicTableObject[] data, List<DbTableColumn> columns)
+        {
+            var bools = columns.Where(c => c.DataType.ToLower() == "bool").ToArray();
+            return data
+                .Select(x => x.Values.Select(kv =>
+                {
+                    var value = bools.Any(b => b.Name == kv.Key)
+                        ? Convert.ChangeType(kv.Value, typeof(bool))
+                        : kv.Value;
+                    return new DataValue { key = kv.Key, value = value };
+                }).ToList())
+                .ToList();
+        }
+
+        private static void CompareColumnDifferences(
+            IEnumerable<DbTableColumn> originalColumns,
+            IEnumerable<DbTableColumn> newColumns,
+            out bool shouldUpdateTable,
+            out bool shouldUpdateSchema)
+        {
+            shouldUpdateTable = false;
+            shouldUpdateSchema = false;
+            var oriCols = originalColumns.Where(x => x.Name != DefaultIdFieldName)
+                .OrderBy(x => x.Name).ToArray();
+            var newCols = newColumns.Where(x => x.Name != DefaultIdFieldName)
+                .OrderBy(x => x.Name).ToArray();
+            if (oriCols.Length != newCols.Length)
+            {
+                shouldUpdateTable = true;
+                shouldUpdateSchema = true;
+                return;
+            }
+
+            for (var i = 0; i < oriCols.Length; i++)
+            {
+                var oriCol = oriCols[i];
+                var newCol = newCols[i];
+                if (GetTablePropertiesString(oriCol) != GetTablePropertiesString(newCol))
+                {
+                    shouldUpdateTable = true;
+                    shouldUpdateSchema = true;
+                    return;
+                }
+
+                if (oriCol.Setting != newCol.Setting)
+                {
+                    shouldUpdateSchema = true;
+                }
+            }
+
+            string GetTablePropertiesString(DbTableColumn col)
+            {
+                return col.Name + col.DataType + col.IsIncremental + col.Seed + col.Scale + col.IsIndex +
+                       col.IsPrimaryKey + col.IsUnique + col.ControlType + col.IsSystem + col.Length;
+            }
+        }
+
+        public class DataValue
+        {
+            public string key { get; set; }
+
+            public object value { get; set; }
+
         }
     }
 }
