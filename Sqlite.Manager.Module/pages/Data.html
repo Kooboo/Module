@@ -130,23 +130,15 @@
             return o._id;
           });
 
-          this.$httpClient
-            .post(
-              "Sqlite/DeleteData",
-              {
-                tableName: Kooboo.getQueryString("table"),
-                values: ids
-              },
-              {
-                SiteId: me.siteId
-              }
-            )
-            .then(function(res) {
-              if (res.status === 200 && res.data.success) {
-                me.getData();
-                window.info.done(Kooboo.text.info.delete.success);
-              }
-            });
+          koobooModule.SqliteModel.DeleteData({
+            tableName: Kooboo.getQueryString("table"),
+            values: ids
+          }).then(function(res) {
+            if (res.success) {
+              me.getData();
+              window.info.done(Kooboo.text.info.delete.success);
+            }
+          });
         }
       },
       editUrl: function(id) {
@@ -162,17 +154,14 @@
       },
       getData: function(pageNr) {
         var me = this;
-        this.$httpClient
-          .get("Sqlite/Data", {
-            SiteId: me.siteId,
-            table: Kooboo.getQueryString("table"),
-            pageNr: pageNr || 1
-          })
-          .then(function(res) {
-            if (res.status === 200 && res.data.success) {
-              me.model = res.data.model;
-            }
-          });
+        koobooModule.SqliteModel.Data({
+          table: Kooboo.getQueryString("table"),
+          pageNr: pageNr || 1
+        }).then(function(res) {
+          if (res.success) {
+            me.model = res.model;
+          }
+        });
       }
     }
   });

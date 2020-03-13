@@ -1,13 +1,24 @@
-window.koobooModule = {
-  getModuleName: function() {
+(function() {
+  function KoobooModule() {
+    self = this;
+  }
+  KoobooModule.prototype.getModuleName = function() {
     if (location.pathname) {
       var name = location.pathname
         .replace("/_Admin/", "")
         .replace(/\/.*\.html.*/, "");
       return name;
     }
-  },
-  path: {
+  };
+  KoobooModule.prototype.getModuleName = function() {
+    if (location.pathname) {
+      var name = location.pathname
+        .replace("/_Admin/", "")
+        .replace(/\/.*\.html.*/, "");
+      return name;
+    }
+  };
+  KoobooModule.prototype.path = {
     resolve: function() {
       var args = Array.from(arguments);
       var result;
@@ -63,8 +74,8 @@ window.koobooModule = {
         }
       }
     }
-  },
-  recombineUrl: function(url, param) {
+  };
+  KoobooModule.prototype.recombineUrl = function(url, param) {
     var keys = Object.keys(param);
     if (keys.length) {
       keys.forEach(function(key, index) {
@@ -76,57 +87,45 @@ window.koobooModule = {
       });
     }
     return url;
-  },
-  getModuleRootPath: function() {
+  };
+  KoobooModule.prototype.getModuleRootPath = function() {
     return "/_Admin/" + koobooModule.getModuleName();
-  },
-  loadJS: function(paths, fromLayout) {
+  };
+  KoobooModule.prototype.loadJS = function(paths, fromLayout) {
     var newPath = paths.map(function(item) {
       return koobooModule.path.resolve(item);
     });
     return Kooboo.loadJS(newPath);
-  }
-};
-koobooModule.loadJS(["pages/js/lib/axios.min.js"]);
-
-const KbHttpClient = {
-  install: function(Vue, options) {
-    Vue.prototype.$httpClient = {
-      post: function(url, data, param) {
-        if (param) {
-          url = koobooModule.recombineUrl(url, param);
-        }
-        return axios.post(url, data);
-      },
-      get: function(url, param) {
-        if (param) {
-          url = koobooModule.recombineUrl(url, param);
-        }
-        return axios.get(url);
-      }
-    };
-  }
-};
-Vue.use(KbHttpClient);
-
-axios.interceptors.request.use(
-  function(request) {
-    if (request.url.indexOf("/") === 0) {
-      request.url = request.url.slice(1);
+  };
+  var sqliteModel = new Kooboo.HttpClientModel("Sqlite");
+  KoobooModule.prototype.SqliteModel = {
+    Tables: function(para) {
+      return sqliteModel.executeGet("Tables", para);
+    },
+    CreateTable: function(para) {
+      return sqliteModel.executePost("Tables", para);
+    },
+    DeleteTables: function(para) {
+      return sqliteModel.executePost("DeleteTables", para);
+    },
+    GetEdit: function(para) {
+      return sqliteModel.executeGet("GetEdit", para);
+    },
+    Data: function(para) {
+      return sqliteModel.executeGet("Data", para);
+    },
+    DeleteData: function(para) {
+      return sqliteModel.executePost("DeleteData", para);
+    },
+    UpdateData: function(para) {
+      return sqliteModel.executePost("UpdateData", para);
+    },
+    Columns: function(para) {
+      return sqliteModel.executePost("Columns", para);
+    },
+    UpdateColumn: function(para) {
+      return sqliteModel.executePost("UpdateColumn", para);
     }
-    request.url = location.origin + "/_api/" + request.url;
-    return request;
-  },
-  function(error) {
-    // 对请求错误做些什么
-    return Promise.reject(error);
-  }
-);
-axios.interceptors.response.use(
-  function(response) {
-    return response;
-  },
-  function(error) {
-    return Promise.reject(error);
-  }
-);
+  };
+  window.koobooModule = new KoobooModule();
+})(window);

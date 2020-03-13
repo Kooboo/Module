@@ -142,14 +142,15 @@
       methods: {
         onDeleteTable() {
           if (confirm(Kooboo.text.confirm.deleteItems)) {
-            var url = "/Sqlite/DeleteTables";
             if (vm.selectedRows.length > 0) {
-              vm.$httpClient
-                .post(url, { names: vm.selectedRows }, { siteId: vm.siteId })
-                .then(function(data) {
+              koobooModule.SqliteModel.DeleteTables({
+                names: vm.selectedRows
+              }).then(function(res) {
+                if (res.success) {
                   window.info.done(Kooboo.text.info.delete.success);
                   vm.getTableList();
-                });
+                }
+              });
             }
           }
         },
@@ -167,24 +168,20 @@
         },
         onSaveNewTable() {
           if (vm.$refs.createTableForm.validate()) {
-            var url = "Sqlite/CreateTable";
-            vm.$httpClient
-              .post(
-                url,
-                { name: vm.createTableModel.name },
-                { siteId: vm.siteId }
-              )
-              .then(function(data) {
+            koobooModule.SqliteModel.CreateTable({
+              name: vm.createTableModel.name
+            }).then(function(res) {
+              if (res.success) {
                 vm.getTableList();
                 vm.closeCreateTableHandle();
-              });
+              }
+            });
           }
         },
         getTableList() {
-          var url = "/Sqlite/Tables";
-          vm.$httpClient.get(url, { siteId: vm.siteId }).then(function(res) {
-            if (res.data.success) {
-              vm.tableData = res.data.model;
+          koobooModule.SqliteModel.Tables().then(function(res) {
+            if (res.success) {
+              vm.tableData = res.model;
             }
           });
         },
