@@ -1,9 +1,7 @@
-﻿using Kooboo.Api;
-using Kooboo.Lib.Helper;
+﻿using Kooboo.Lib.Helper;
 using Kooboo.Sites.Models;
-using Kooboo.Sites.Scripting.Global.Sqlite;
+using Kooboo.Sites.Scripting.Interfaces;
 using Kooboo.Web.ViewModel;
-using KScript;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,12 +11,7 @@ namespace Sqlite.Menager.Module.code
 {
     internal static class SqliteExtensions
     {
-        internal static SqliteDatabase GetSqliteDatabase(this ApiCall call)
-        {
-            return new k(call.Context).Sqlite;
-        }
-
-        internal static void EnsureSystemTableCreated(this SqliteDatabase db)
+        internal static void EnsureSystemTableCreated(this IRelationalDatabase db)
         {
             if (!db.IsTableExists(Cmd.KoobooSystemTable))
             {
@@ -26,13 +19,13 @@ namespace Sqlite.Menager.Module.code
             }
         }
 
-        internal static bool IsTableExists(this SqliteDatabase db, string name)
+        internal static bool IsTableExists(this IRelationalDatabase db, string name)
         {
             var tables = db.Query(Cmd.TableExists(name));
             return tables.Any(x => x.Values.Count > 0);
         }
 
-        internal static List<DbTableColumn> GetAllColumns(this SqliteDatabase db, string table)
+        internal static List<DbTableColumn> GetAllColumns(this IRelationalDatabase db, string table)
         {
             var columString = db.GetAllColumnsRow(table);
             return string.IsNullOrWhiteSpace(columString)
@@ -40,7 +33,7 @@ namespace Sqlite.Menager.Module.code
                 : JsonHelper.Deserialize<List<DbTableColumn>>(columString);
         }
 
-        internal static List<DatabaseItemEdit> GetAllColumnsForItemEdit(this SqliteDatabase db, string table)
+        internal static List<DatabaseItemEdit> GetAllColumnsForItemEdit(this IRelationalDatabase db, string table)
         {
             var columString = db.GetAllColumnsRow(table);
             return string.IsNullOrWhiteSpace(columString)
@@ -48,7 +41,7 @@ namespace Sqlite.Menager.Module.code
                 : JsonHelper.Deserialize<List<DatabaseItemEdit>>(columString);
         }
 
-        internal static int GetTotalCount(this SqliteDatabase db, string table)
+        internal static int GetTotalCount(this IRelationalDatabase db, string table)
         {
             var schema = db.Query(Cmd.GetTotalCount(table));
             if (schema.Length <= 0)
@@ -74,7 +67,7 @@ namespace Sqlite.Menager.Module.code
             }
         }
 
-        private static string GetAllColumnsRow(this SqliteDatabase db, string table)
+        private static string GetAllColumnsRow(this IRelationalDatabase db, string table)
         {
             var schema = db.Query(Cmd.GetSchema(table));
             if (schema.Length <= 0)
