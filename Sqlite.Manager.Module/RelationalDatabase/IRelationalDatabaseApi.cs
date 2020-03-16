@@ -1,10 +1,11 @@
-using System;
-using System.Collections.Generic;
 using Kooboo.Api;
 using Kooboo.Sites.Models;
+using Kooboo.Sites.Scripting.Interfaces;
 using Kooboo.Web.ViewModel;
+using System;
+using System.Collections.Generic;
 
-namespace Sqlite.Menager.Module.code
+namespace Sqlite.Menager.Module.RelationalDatabase
 {
     public interface IRelationalDatabaseApi : IApi
     {
@@ -18,5 +19,6 @@ namespace Sqlite.Menager.Module.code
         List<DatabaseItemEdit> GetEdit(string tablename, string id, ApiCall call);
         Guid UpdateData(string tablename, Guid id, List<DatabaseItemEdit> values, ApiCall call);
         void DeleteData(string tablename, List<Guid> values, ApiCall call);
+        Dictionary<string, List<DbTableColumn>> SyncSchema(IRelationalDatabase db);
     }
 }

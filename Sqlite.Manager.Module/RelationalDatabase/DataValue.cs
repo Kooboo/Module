@@ -1,7 +1,7 @@
 ﻿//Copyright (c) 2018 Yardi Technology Limited. Http://www.kooboo.com 
 //All rights reserved.
 
-namespace Sqlite.Menager.Module.code
+namespace Sqlite.Menager.Module.RelationalDatabase
 {
     public class DataValue
     {
