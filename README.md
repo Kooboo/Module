@@ -5,8 +5,14 @@
 2. dotnet core 2.1+
 
 ## Install
-```git clone https://github.com/Kooboo/Module.git %TMP%\_km && cd %TMP%\_km && dotnet new -i ./```
+cmd run
+
+```git clone https://github.com/Kooboo/Module.git %TMP%\_km && cd %TMP%\_km\template && dotnet new -i ./```
 ## Update
-```rd /s /q %TMP%\_km &  git clone https://github.com/Kooboo/Module.git %TMP%\_km && cd %TMP%\_km && dotnet new -i ./```
+cmd run
+
+```rd /s /q %TMP%\_km &  git clone https://github.com/Kooboo/Module.git %TMP%\_km && cd %TMP%\_km\template && dotnet new -i ./```
 ## Remove
+cmd run
+
 ```dotnet new -u %TMP%\_km && rd /s /q %TMP%\_km```
