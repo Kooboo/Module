@@ -2,7 +2,7 @@
   "$schema": "http://json.schemastore.org/template",
   "author": "Kooboo",
   "classifications": ["Kooboo", "Module", "Template", "C#"],
-  "identity": "Kooboo.Module.Template",
+  "identity": "kooboo.module.template",
   "name": "Kooboo Module Template",
   "shortName": "kooboomodule",
   "tags": {
