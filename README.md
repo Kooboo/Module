@@ -15,4 +15,4 @@ cmd run
 ## Remove
 cmd run
 
-```dotnet new -u %TMP%\_km && rd /s /q %TMP%\_km```
+```dotnet new -u %TMP%\_km\template && rd /s /q %TMP%\_km```
