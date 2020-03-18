@@ -15,7 +15,7 @@ namespace Sqlite.Menager.Module.MySql
 
         public string Url => "mysql.manager.module/mysql.html";
 
-        public int Order => 0;
+        public int Order => 5;
 
         public List<ICmsMenu> SubItems { get; set; }
 

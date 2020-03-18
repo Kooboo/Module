@@ -15,7 +15,7 @@ namespace Sqlite.Menager.Module.SqlServer
 
         public string Url => "sqlserver.manager.module/sqlserver.html";
 
-        public int Order => 0;
+        public int Order => 6;
 
         public List<ICmsMenu> SubItems { get; set; }
 
