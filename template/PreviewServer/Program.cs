@@ -1,26 +1,33 @@
 ﻿using Kooboo.Data;
+using Kooboo.Dom;
 using Kooboo.IndexedDB;
 using Kooboo.Lib.Compatible;
+using Kooboo.Lib.Helper;
 using Kooboo.Lib.Reflection;
 using Kooboo.Mail;
 using Kooboo.Web;
+using Newtonsoft.Json.Linq;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
+using System.Xml.Linq;
 using VirtualFile;
 
 namespace PreviewServer
 {
     class Program
     {
+        static string[] _langs = new[] { "zh" };
         static void Main(string[] args)
         {
             WindowSystem.TryPath.Add("../../../../Kooboo");
-            AddModule("../");
-
-            Kooboo.Lib.Compatible.CompatibleManager.Instance.Framework.RegisterEncoding();
-            GlobalSettings.RootPath = Kooboo.Data.AppSettings.DatabasePath;
+            Kooboo.Render.Controller.ModuleFile.ModuleRoots.Add("../../../../");
+            AddModule();
+            CompatibleManager.Instance.Framework.RegisterEncoding();
+            GlobalSettings.RootPath = AppSettings.DatabasePath;
 
             var initport = AppSettings.InitPort();
             if (!initport.Ok)
@@ -30,50 +37,85 @@ namespace PreviewServer
             }
 
             Kooboo.Data.Hosts.WindowsHost.change = new Kooboo.Data.Hosts.HostChange() { NoChange = true };
-            Kooboo.Data.AppSettings.DefaultLocalHost = "localkooboo.com";
-            Kooboo.Data.AppSettings.StartHost = "127.0.0.1";
+            AppSettings.DefaultLocalHost = "localkooboo.com";
+            AppSettings.StartHost = "127.0.0.1";
 
             SystemStart.Start(initport.HttpPort);
             Console.WriteLine("Web Server Started at port:" + initport.HttpPort.ToString());
 
             EmailWorkers.Start();
-            Kooboo.Lib.Compatible.CompatibleManager.Instance.Framework.ConsoleWait();
+            CompatibleManager.Instance.Framework.ConsoleWait();
         }
 
-        private static void AddModule(string path)
+        private static void AddModule()
         {
-            path = Path.GetFullPath(path);
-            var parent = Directory.GetParent(path).FullName;
-            var configJsons = Directory.GetFiles(parent, "*config.json", SearchOption.AllDirectories);
-            Kooboo.Render.Controller.ModuleFile.ModuleRoots.Add(parent);
+            var dic = Directory.GetDirectories("../../../../");
+            var moduleDic = dic.First(f => f.ToLower().EndsWith(".module"));
+            moduleDic = Path.GetFullPath(moduleDic);
+            GenerateLang(moduleDic);
+            LoadConfig(moduleDic);
+            LoadFiles(moduleDic);
+            LoadDir(moduleDic);
+        }
 
-            if (configJsons.Count() > 0)
+        private static void GenerateLang(string moduleDic)
+        {
+            var jsonPath = Path.Combine(moduleDic, "config.json");
+
+            var koobooKeys = XDocument.Load("../../../../Kooboo/Lang/en.xml")
+                                      .Root
+                                      .Elements()
+                                      .Select(s => s.Attribute("id").Value)
+                                      .ToArray();
+
+            var moduleKeys = GetKeys(moduleDic);
+            var exceptKeys = moduleKeys.Except(koobooKeys);
+
+            var json = JsonHelper.DeserializeJObject(File.ReadAllText(jsonPath));
+            if (!json.ContainsKey("langs")) json.Add("langs", new JObject());
+            var langs = json.Property("langs").Value as JObject;
+
+            foreach (var item in _langs)
             {
-                foreach (var item in configJsons)
+                if (!langs.ContainsKey(item)) langs.Add(item, new JObject());
+                var lang = langs.Property(item).Value as JObject;
+                foreach (var key in exceptKeys)
                 {
-                    var moduleDic = Path.GetDirectoryName(item);
-                    LoadConfig(item);
-                    LoadFiles(moduleDic);
-                    LoadDir(moduleDic);
+                    if (!lang.ContainsKey(key))
+                    {
+                        lang.Add(key, "");
+                    }
                 }
             }
 
-            if (Directory.GetFiles(parent, "*.sln").Count() > 0)
-            {
-                return;
-            }
-            else
-            {
-                AddModule(parent);
-            }
+            File.WriteAllText(jsonPath, json.ToString(), Encoding.UTF8);
         }
 
-        private static void LoadConfig(string item)
+        private static HashSet<string> GetKeys(string moduleDic)
         {
-            var moduleName = Path.GetFileName(Path.GetDirectoryName(item));
+            var htmls = Directory.GetFiles(moduleDic, "*.html", SearchOption.AllDirectories);
+            var allKeys = new HashSet<string>();
+
+            foreach (var item in htmls)
+            {
+                var text = File.ReadAllText(item);
+                var keys = Kooboo.Data.Language.MultiLingualHelper.GetDomKeys(text);
+                foreach (var key in keys)
+                {
+                    allKeys.Add(key);
+                }
+            }
+
+            return allKeys;
+        }
+
+        private static void LoadConfig(string moduleDic)
+        {
+            var jsonPath = Path.Combine(moduleDic, "config.json");
+            var moduleName = Path.GetFileName(moduleDic);
             var path = Path.Combine(AppSettings.ModulePath, moduleName, "config.json");
             path = Helper.NormalizePath(path);
-            VirtualResources.Entries.TryAdd(path, new ModuleFile(item, "module"));
+            VirtualResources.Entries.TryAdd(path, new ModuleFile(jsonPath, "module"));
         }
 
         private static void LoadDir(string moduleDic)
