@@ -11,12 +11,12 @@ namespace Sqlite.Menager.Module.MySql
     {
         public override string ListTables()
         {
-            return "SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA='{0}' AND TABLE_NAME NOT LIKE '\\_%';";
+            return "SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA='{0}' AND TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME NOT LIKE '\\_%';";
         }
 
         public override string IsExistTable(string table)
         {
-            return "SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE TABLE_SCHEMA='{0}' AND TABLE_NAME = '" + table + "');";
+            return "SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE TABLE_SCHEMA='{0}' AND TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = '" + table + "');";
         }
 
         public override string DbTypeToDataType(string type)
@@ -126,6 +126,22 @@ namespace Sqlite.Menager.Module.MySql
             }
         }
 
+        public override string GetConstrains(string table)
+        {
+            return @"
+SELECT
+	s.TABLE_NAME AS `TABLE`,
+	s.INDEX_NAME AS `NAME`,
+	s.COLUMN_NAME AS `COLUMN`,
+	( CASE WHEN s.INDEX_Name = 'PRIMARY' THEN TRUE ELSE FALSE END ) AS `IsPrimaryKey`,
+	( CASE WHEN s.INDEX_Name = 'PRIMARY' THEN 'PrimaryKey' ELSE 'Index' END ) AS `Type`
+FROM
+	INFORMATION_SCHEMA.STATISTICS s 
+WHERE
+	s.TABLE_SCHEMA = '{0}' 
+	AND s.TABLE_NAME = '" + table + "';";
+        }
+
         protected override string CreateTableInternal(string table, List<DbTableColumn> columns)
         {
             var sb = new StringBuilder();
@@ -182,7 +198,11 @@ namespace Sqlite.Menager.Module.MySql
             return $"SELECT * FROM {table} {orderByDesc} LIMIT {totalskip},{pageSize};";
         }
 
-        public override string UpdateColumn(string table, List<DbTableColumn> originalColumns, List<DbTableColumn> columns)
+        public override string UpdateColumn(
+            string table,
+            List<DbTableColumn> originalColumns,
+            List<DbTableColumn> columns,
+            DbConstrain[] constraints)
         {
             EnsureDefaultIdField(columns);
             var sb = new StringBuilder();
@@ -197,7 +217,7 @@ namespace Sqlite.Menager.Module.MySql
                     sb.AppendLine($"ADD {GenerateColumnDefine(column)},");
                 }
 
-                var index = GenerateUpdateIndex(ori ?? new DbTableColumn(), column, table);
+                var index = GenerateUpdateIndex(ori ?? new DbTableColumn(), column, table, constraints);
                 if (index != null)
                 {
                     sb.AppendLine(index);
@@ -213,7 +233,7 @@ namespace Sqlite.Menager.Module.MySql
                     continue;
                 }
 
-                var index = GenerateUpdateIndex(column, new DbTableColumn(), table);
+                var index = GenerateUpdateIndex(column, new DbTableColumn(), table, constraints);
                 if (index != null)
                 {
                     sb.AppendLine(index);
@@ -237,7 +257,11 @@ namespace Sqlite.Menager.Module.MySql
             return sb.ToString();
         }
 
-        private string GenerateUpdateIndex(DbTableColumn originalColumn, DbTableColumn newColumn, string table)
+        private string GenerateUpdateIndex(
+            DbTableColumn originalColumn,
+            DbTableColumn newColumn,
+            string table,
+            DbConstrain[] constraints)
         {
             if (originalColumn.IsPrimaryKey != newColumn.IsPrimaryKey)
             {
@@ -247,7 +271,7 @@ namespace Sqlite.Menager.Module.MySql
             if (originalColumn.IsUnique && !newColumn.IsUnique)
             {
                 // remove unique index
-                var index = $"DROP INDEX {string.Format(UniqueNameFormat, table, originalColumn.Name)},";
+                var index = RemoveIndex();
                 if (newColumn.IsIndex)
                 {
                     index += "\r\n" + AddIndex();
@@ -281,6 +305,14 @@ namespace Sqlite.Menager.Module.MySql
             {
                 var length = GetIndexLength(newColumn);
                 return $"ADD INDEX {string.Format(IndexNameFormat, table, newColumn.Name)}({newColumn.Name}{length}),";
+            }
+
+            string RemoveIndex()
+            {
+                var constraint = constraints.First(x =>
+                    x.Type == DbConstrain.ConstrainType.Index &&
+                    x.Column.Equals(originalColumn.Name, StringComparison.OrdinalIgnoreCase));
+                return $"DROP INDEX {constraint.Name},";
             }
         }
 

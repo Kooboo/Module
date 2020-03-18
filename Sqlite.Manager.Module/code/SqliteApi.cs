@@ -5,8 +5,9 @@ using Kooboo.Api;
 using Kooboo.Sites.Scripting.Interfaces;
 using Kooboo.Web.ViewModel;
 using KScript;
-using System;
 using Sqlite.Menager.Module.RelationalDatabase;
+using System;
+using System.Linq;
 
 namespace Sqlite.Menager.Module.code
 {
@@ -21,6 +22,18 @@ namespace Sqlite.Menager.Module.code
         protected override IRelationalDatabase GetDatabase(ApiCall call)
         {
             return new k(call.Context).Sqlite;
+        }
+
+        protected override DbConstrain[] GetConstrains(IRelationalDatabase db, string table)
+        {
+            return db.Query(Cmd.GetConstrains(table))
+                .Select(x => new DbConstrain
+                {
+                    Table = table,
+                    Name = (string)x.Values["name"],
+                    Type = DbConstrain.ConstrainType.Index
+                })
+                .ToArray();
         }
 
         protected override Type GetClrType(DatabaseItemEdit column)

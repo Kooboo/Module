@@ -53,7 +53,11 @@ namespace Sqlite.Menager.Module.RelationalDatabase
             return drops + "\r\n" + schemas;
         }
 
-        public abstract string UpdateColumn(string table, List<DbTableColumn> originalColumns, List<DbTableColumn> columns);
+        public abstract string UpdateColumn(
+            string table,
+            List<DbTableColumn> originalColumns,
+            List<DbTableColumn> columns,
+            DbConstrain[] constraints);
 
         public virtual string GetTotalCount(string table)
         {
@@ -71,6 +75,8 @@ namespace Sqlite.Menager.Module.RelationalDatabase
         public abstract string DbTypeToDataType(string type);
 
         public abstract string DbTypeToControlType(string type);
+
+        public abstract string GetConstrains(string table);
 
         protected void EnsureDefaultIdField(List<DbTableColumn> columns)
         {

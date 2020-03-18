@@ -98,7 +98,8 @@ namespace Sqlite.Menager.Module.RelationalDatabase
 
             if (shouldUpdateTable)
             {
-                db.Execute(Cmd.UpdateColumn(tablename, originalColumns, columns));
+                var constraints = GetConstrains(db, tablename);
+                db.Execute(Cmd.UpdateColumn(tablename, originalColumns, columns, constraints));
             }
 
             if (shouldUpdateSchema)
@@ -350,6 +351,20 @@ namespace Sqlite.Menager.Module.RelationalDatabase
                     return new DataValue { key = kv.Key, value = value };
                 }).ToList())
                 .ToList();
+        }
+
+        protected virtual DbConstrain[] GetConstrains(IRelationalDatabase db, string table)
+        {
+            var constrians = db.Query(Cmd.GetConstrains(table));
+            return constrians.Select(x => new DbConstrain
+            {
+                Table = (string)x.Values["Table"],
+                Column = (string)x.Values["Column"],
+                Name = (string)x.Values["Name"],
+                Type = ((bool)x.Values["IsPrimaryKey"]
+                    ? DbConstrain.ConstrainType.PrimaryKey
+                    : DbConstrain.ConstrainType.Index)
+            }).ToArray();
         }
 
         private void EnsureSystemTableCreated(IRelationalDatabase db)

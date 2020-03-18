@@ -39,6 +39,11 @@ namespace Sqlite.Menager.Module.code
             return "TextBox";
         }
 
+        public override string GetConstrains(string table)
+        {
+            return $"SELECT name FROM SQLite_master WHERE type = 'index' AND sql IS NOT NULL AND tbl_name = '{table}';";
+        }
+
         protected override string CreateTableInternal(string table, List<DbTableColumn> columns)
         {
             var sb = new StringBuilder();
@@ -93,18 +98,20 @@ namespace Sqlite.Menager.Module.code
             return $"SELECT * FROM {table} {orderByDesc} LIMIT {totalskip},{pageSize};";
         }
 
-        public override string UpdateColumn(string table, List<DbTableColumn> originalColumns, List<DbTableColumn> columns)
+        public override string UpdateColumn(
+            string table,
+            List<DbTableColumn> originalColumns,
+            List<DbTableColumn> columns,
+            DbConstrain[] constraints)
         {
             EnsureDefaultIdField(columns);
             var sb = new StringBuilder();
             var oldTable = $"_old_{table}_{DateTime.Now:yyyyMMddHHmmss}";
 
             // drop index
-            var indexes = originalColumns.Where(x => !x.IsPrimaryKey && (x.IsIndex || x.IsUnique)).ToArray();
-            foreach (var column in indexes)
+            foreach (var constraint in constraints.Where(x => x.Type == DbConstrain.ConstrainType.Index))
             {
-                var format = column.IsUnique ? UniqueNameFormat : IndexNameFormat;
-                sb.AppendLine($"DROP INDEX {string.Format(format, table, column.Name)};");
+                sb.AppendLine($"DROP INDEX {constraint.Name};");
             }
 
             // rename table
