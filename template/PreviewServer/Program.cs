@@ -79,6 +79,22 @@ namespace PreviewServer
             {
                 if (!langs.ContainsKey(item)) langs.Add(item, new JObject());
                 var lang = langs.Property(item).Value as JObject;
+
+                var removeKeys = new List<string>();
+
+                foreach (var key in lang.Properties())
+                {
+                    if (!exceptKeys.Contains(key.Name) && string.IsNullOrEmpty(key.Value.ToString()))
+                    {
+                        removeKeys.Add(key.Name);
+                    }
+                }
+
+                foreach (var key in removeKeys)
+                {
+                    lang.Remove(key);
+                }
+
                 foreach (var key in exceptKeys)
                 {
                     if (!lang.ContainsKey(key))
