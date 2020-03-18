@@ -25,7 +25,7 @@ namespace Sqlite.Menager.Module.RelationalDatabase
             var columns = new List<DbTableColumn>
             {
                 new DbTableColumn { Name = "table_name", IsPrimaryKey = true, DataType = DbStringTypeName, Length = 512 },
-                new DbTableColumn { Name = "schema", DataType = DbStringTypeName },
+                new DbTableColumn { Name = "table_schema", DataType = DbStringTypeName },
             };
             return CreateTableInternal(KoobooSchemaTable, columns);
         }
@@ -33,10 +33,14 @@ namespace Sqlite.Menager.Module.RelationalDatabase
         public string CreateTableAndSchema(string table, List<DbTableColumn> columns, out object param)
         {
             columns = columns ?? new List<DbTableColumn>();
-            EnsureDefaultIdField(columns);
+            if (columns.All(x => x.Name != Kooboo.IndexedDB.Dynamic.Constants.DefaultIdFieldName))
+            {
+                columns.Insert(0, GetDefaultIdColumn());
+            }
+
             var sb = new StringBuilder();
             sb.AppendLine(CreateTableInternal(table, columns));
-            sb.AppendLine($"INSERT INTO `{KoobooSchemaTable}`(`table_name`, `schema`) VALUES(@tableName, @schema);");
+            sb.AppendLine($"INSERT INTO {KoobooSchemaTable}(table_name, table_schema) VALUES(@tableName, @schema);");
             param = new
             {
                 tableName = table,
@@ -49,7 +53,7 @@ namespace Sqlite.Menager.Module.RelationalDatabase
         public virtual string DeleteTables(string[] tables)
         {
             var drops = string.Join("", tables.Select(table => $"DROP TABLE {table};"));
-            var schemas = $"DELETE FROM {KoobooSchemaTable} WHERE table_name in (\"" + string.Join("\",\"", tables) + "\");";
+            var schemas = $"DELETE FROM {KoobooSchemaTable} WHERE table_name in ('" + string.Join("', '", tables) + "');";
             return drops + "\r\n" + schemas;
         }
 
@@ -68,8 +72,8 @@ namespace Sqlite.Menager.Module.RelationalDatabase
 
         public virtual string DeleteData(string table, List<Guid> ids)
         {
-            var idString = string.Join("\",\"", ids);
-            return $"DELETE FROM {table} WHERE _id IN (\"{idString}\");";
+            var idString = string.Join("', '", ids);
+            return $"DELETE FROM {table} WHERE _id IN ('{idString}');";
         }
 
         public abstract string DbTypeToDataType(string type);
@@ -77,14 +81,6 @@ namespace Sqlite.Menager.Module.RelationalDatabase
         public abstract string DbTypeToControlType(string type);
 
         public abstract string GetConstrains(string table);
-
-        protected void EnsureDefaultIdField(List<DbTableColumn> columns)
-        {
-            if (columns.All(x => x.Name != Kooboo.IndexedDB.Dynamic.Constants.DefaultIdFieldName))
-            {
-                columns.Insert(0, GetDefaultIdColumn());
-            }
-        }
 
         protected abstract string CreateTableInternal(string table, List<DbTableColumn> columns);
 

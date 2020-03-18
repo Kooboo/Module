@@ -7,7 +7,9 @@ using Kooboo.Web.ViewModel;
 using KScript;
 using Sqlite.Menager.Module.RelationalDatabase;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using Kooboo.Sites.Models;
 
 namespace Sqlite.Menager.Module.code
 {
@@ -34,6 +36,20 @@ namespace Sqlite.Menager.Module.code
                     Type = DbConstrain.ConstrainType.Index
                 })
                 .ToArray();
+        }
+
+        protected override List<List<DataValue>> ConvertDataValue(IDynamicTableObject[] data, List<DbTableColumn> columns)
+        {
+            var bools = columns.Where(c => c.DataType.ToLower() == "bool").ToArray();
+            return data
+                .Select(x => x.Values.Select(kv =>
+                {
+                    var value = bools.Any(b => b.Name == kv.Key)
+                        ? Convert.ChangeType(kv.Value, typeof(bool))
+                        : kv.Value;
+                    return new DataValue { key = kv.Key, value = value };
+                }).ToList())
+                .ToList();
         }
 
         protected override Type GetClrType(DatabaseItemEdit column)

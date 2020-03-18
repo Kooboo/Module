@@ -204,7 +204,6 @@ WHERE
             List<DbTableColumn> columns,
             DbConstrain[] constraints)
         {
-            EnsureDefaultIdField(columns);
             var sb = new StringBuilder();
             sb.AppendLine($"ALTER TABLE `{table}`");
 
@@ -233,13 +232,7 @@ WHERE
                     continue;
                 }
 
-                var index = GenerateUpdateIndex(column, new DbTableColumn(), table, constraints);
-                if (index != null)
-                {
-                    sb.AppendLine(index);
-                }
-
-                sb.AppendLine($"DROP {column.Name},");
+                sb.AppendLine(DropColumn(column, constraints));
             }
 
             // update primary key
@@ -255,6 +248,16 @@ WHERE
             sb.Remove(sb.Length - Environment.NewLine.Length - 1, Environment.NewLine.Length + 1);
             sb.AppendLine(";");
             return sb.ToString();
+        }
+
+        private string DropColumn(DbTableColumn column, IEnumerable<DbConstrain> constraints)
+        {
+            var columnIndexes = constraints
+                .Where(x => x.Type == DbConstrain.ConstrainType.Index &&
+                            x.Column.Equals(column.Name, StringComparison.OrdinalIgnoreCase));
+            return string.Join(Environment.NewLine, columnIndexes.Select(x => $"DROP INDEX {x.Name},")) +
+                   Environment.NewLine +
+                   $"DROP COLUMN `{column.Name}`,";
         }
 
         private string GenerateUpdateIndex(
@@ -290,7 +293,7 @@ WHERE
             if (originalColumn.IsIndex && !newColumn.IsIndex)
             {
                 // remove index
-                return $"DROP INDEX {string.Format(IndexNameFormat, table, originalColumn.Name)},";
+                return RemoveIndex();
             }
 
             if (!originalColumn.IsIndex && newColumn.IsIndex)

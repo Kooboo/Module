@@ -28,7 +28,7 @@ namespace Sqlite.Menager.Module.RelationalDatabase
         public List<string> Tables(ApiCall call)
         {
             var db = GetDatabase(call);
-            EnsureSystemTableCreated(db);
+            SyncSchema(db);
             return ListTables(db);
         }
 
@@ -41,9 +41,6 @@ namespace Sqlite.Menager.Module.RelationalDatabase
 
             var db = GetDatabase(call);
             EnsureSystemTableCreated(db);
-            //db.SqlExecuter.CreateTable(name);
-            //SyncSchema(db);
-            //db.EnsureSystemTableCreated();
 
             //// create table and schema
             db.Execute(Cmd.CreateTableAndSchema(name, null, out var param), param);
@@ -70,7 +67,7 @@ namespace Sqlite.Menager.Module.RelationalDatabase
         public List<DbTableColumn> Columns(string table, ApiCall call)
         {
             var db = GetDatabase(call);
-            EnsureSystemTableCreated(db);
+            SyncSchema(db);
             var columns = GetAllColumns(db, table);
             return columns.Where(x => x.Name != DefaultIdFieldName).ToList();
         }
@@ -78,13 +75,6 @@ namespace Sqlite.Menager.Module.RelationalDatabase
         public void UpdateColumn(string tablename, List<DbTableColumn> columns, ApiCall call)
         {
             var db = GetDatabase(call);
-            var addedColumn = SyncSchema(db);
-            if (addedColumn.ContainsKey(tablename))
-            {
-                // add colmns that user added to db not using kooboo site, to prevent deleting these columns by mistake.
-                columns.AddRange(addedColumn[tablename]);
-            }
-
             var originalColumns = GetAllColumns(db, tablename);
             // table not exists, create
             if (originalColumns.Count <= 0)
@@ -93,7 +83,13 @@ namespace Sqlite.Menager.Module.RelationalDatabase
                 return;
             }
 
-            // updat table
+            // update table
+            var defaultIdFiled = originalColumns.FirstOrDefault(c => c.Name == DefaultIdFieldName);
+            if (defaultIdFiled != null && columns.All(c => c.Name != DefaultIdFieldName))
+            {
+                columns.Insert(0, defaultIdFiled);
+            }
+
             CompareColumnDifferences(originalColumns, columns, out var shouldUpdateTable, out var shouldUpdateSchema);
 
             if (shouldUpdateTable)
@@ -105,7 +101,7 @@ namespace Sqlite.Menager.Module.RelationalDatabase
             if (shouldUpdateSchema)
             {
                 db.GetTable(Cmd.KoobooSchemaTable).update(tablename,
-                    new Dictionary<string, object> { { "schema", JsonHelper.Serialize(columns) } });
+                    new Dictionary<string, object> { { "table_schema", JsonHelper.Serialize(columns) } });
                 //db.Execute(Cmd.UpdateSchema(tablename, columns, out var param), param);
             }
         }
@@ -139,7 +135,8 @@ namespace Sqlite.Menager.Module.RelationalDatabase
 
             var result = new PagedListViewModel<List<DataValue>>();
 
-            var totalcount = (int)(long)db.Query(Cmd.GetTotalCount(table))[0].Values.First().Value;
+            var total = db.Query(Cmd.GetTotalCount(table))[0].Values.First().Value;
+            var totalcount = (int)Convert.ChangeType(total, typeof(int));
 
             result.TotalCount = totalcount;
             result.TotalPages = ApiHelper.GetPageCount(totalcount, pager.PageSize);
@@ -247,14 +244,56 @@ namespace Sqlite.Menager.Module.RelationalDatabase
             db.Execute(Cmd.DeleteData(tablename, values));
         }
 
-        public Dictionary<string, List<DbTableColumn>> SyncSchema(IRelationalDatabase db)
+        public void SyncSchema(ApiCall call)
+        {
+            var db = GetDatabase(call);
+            SyncSchema(db);
+        }
+
+        protected abstract IRelationalDatabase GetDatabase(ApiCall call);
+
+        protected abstract Type GetClrType(DatabaseItemEdit column);
+
+        protected virtual List<string> ListTables(IRelationalDatabase db)
+        {
+            var tables = db.Query(Cmd.ListTables());
+            return tables.Select(x => (string)x.Values.First().Value).ToList();
+        }
+
+        protected virtual bool IsExistTable(IRelationalDatabase db, string name)
+        {
+            var exist = db.Query(Cmd.IsExistTable(name));
+            return exist.Any(x => x.Values.Count > 0);
+        }
+
+        protected virtual List<List<DataValue>> ConvertDataValue(IDynamicTableObject[] data, List<DbTableColumn> columns)
+        {
+            return data
+                .Select(x => x.Values.Select(kv => new DataValue { key = kv.Key, value = kv.Value }).ToList())
+                .ToList();
+        }
+
+        protected virtual DbConstrain[] GetConstrains(IRelationalDatabase db, string table)
+        {
+            var constrians = db.Query(Cmd.GetConstrains(table));
+            return constrians.Select(x => new DbConstrain
+            {
+                Table = (string)x.Values["Table"],
+                Column = (string)x.Values["Column"],
+                Name = (string)x.Values["Name"],
+                Type =
+                    (DbConstrain.ConstrainType)Enum.Parse(typeof(DbConstrain.ConstrainType), (string)x.Values["Type"], true)
+            }).ToArray();
+        }
+
+        protected virtual Dictionary<string, List<DbTableColumn>> SyncSchema(IRelationalDatabase db)
         {
             var newCloumnFromDb = new Dictionary<string, List<DbTableColumn>>();
             EnsureSystemTableCreated(db);
             var koobooSchemaTable = db.GetTable(Cmd.KoobooSchemaTable);
             var koobooSchemas = koobooSchemaTable.all().ToDictionary(
                 x => (string)x.Values["table_name"],
-                x => JsonHelper.Deserialize<List<DbTableColumn>>((string)x.Values["schema"]));
+                x => JsonHelper.Deserialize<List<DbTableColumn>>((string)x.Values["table_schema"]));
             var allTables = ListTables(db);
 
             var deletedTables = koobooSchemas.Keys.Except(allTables).ToArray();
@@ -281,7 +320,7 @@ namespace Sqlite.Menager.Module.RelationalDatabase
                     koobooSchemaTable.add(new Dictionary<string, object>
                     {
                         { "table_name", table },
-                        { "schema", JsonHelper.Serialize(koobooSchema) }
+                        { "table_schema", JsonHelper.Serialize(koobooSchema) }
                     });
 
                     newCloumnFromDb.Add(table, koobooSchema);
@@ -313,7 +352,7 @@ namespace Sqlite.Menager.Module.RelationalDatabase
                         newCloumnFromDb.Add(table, dbNewColumn);
                         db.GetTable(Cmd.KoobooSchemaTable).update(table, new Dictionary<string, object>
                         {
-                            { "schema", JsonHelper.Serialize(newSchema) }
+                            { "table_schema", JsonHelper.Serialize(newSchema) }
                         });
                     }
 
@@ -321,50 +360,6 @@ namespace Sqlite.Menager.Module.RelationalDatabase
             }
 
             return newCloumnFromDb;
-        }
-
-        protected abstract IRelationalDatabase GetDatabase(ApiCall call);
-
-        protected abstract Type GetClrType(DatabaseItemEdit column);
-
-        protected virtual List<string> ListTables(IRelationalDatabase db)
-        {
-            var tables = db.Query(Cmd.ListTables());
-            return tables.Select(x => (string)x.Values.First().Value).ToList();
-        }
-
-        protected virtual bool IsExistTable(IRelationalDatabase db, string name)
-        {
-            var exist = db.Query(Cmd.IsExistTable(name));
-            return exist.Any(x => x.Values.Count > 0);
-        }
-
-        protected virtual List<List<DataValue>> ConvertDataValue(IDynamicTableObject[] data, List<DbTableColumn> columns)
-        {
-            var bools = columns.Where(c => c.DataType.ToLower() == "bool").ToArray();
-            return data
-                .Select(x => x.Values.Select(kv =>
-                {
-                    var value = bools.Any(b => b.Name == kv.Key)
-                        ? Convert.ChangeType(kv.Value, typeof(bool))
-                        : kv.Value;
-                    return new DataValue { key = kv.Key, value = value };
-                }).ToList())
-                .ToList();
-        }
-
-        protected virtual DbConstrain[] GetConstrains(IRelationalDatabase db, string table)
-        {
-            var constrians = db.Query(Cmd.GetConstrains(table));
-            return constrians.Select(x => new DbConstrain
-            {
-                Table = (string)x.Values["Table"],
-                Column = (string)x.Values["Column"],
-                Name = (string)x.Values["Name"],
-                Type = ((bool)x.Values["IsPrimaryKey"]
-                    ? DbConstrain.ConstrainType.PrimaryKey
-                    : DbConstrain.ConstrainType.Index)
-            }).ToArray();
         }
 
         private void EnsureSystemTableCreated(IRelationalDatabase db)
@@ -394,7 +389,7 @@ namespace Sqlite.Menager.Module.RelationalDatabase
         private string GetAllColumnsRow(IRelationalDatabase db, string table)
         {
             var schema = db.GetTable(Cmd.KoobooSchemaTable).get(table);
-            return (string)schema?.Values["schema"];
+            return (string)schema?.Values["table_schema"];
         }
 
         private static void CompareColumnDifferences(

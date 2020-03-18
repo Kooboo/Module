@@ -104,7 +104,6 @@ namespace Sqlite.Menager.Module.code
             List<DbTableColumn> columns,
             DbConstrain[] constraints)
         {
-            EnsureDefaultIdField(columns);
             var sb = new StringBuilder();
             var oldTable = $"_old_{table}_{DateTime.Now:yyyyMMddHHmmss}";
 

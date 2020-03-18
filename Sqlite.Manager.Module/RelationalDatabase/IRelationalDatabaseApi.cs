@@ -19,6 +19,6 @@ namespace Sqlite.Menager.Module.RelationalDatabase
         List<DatabaseItemEdit> GetEdit(string tablename, string id, ApiCall call);
         Guid UpdateData(string tablename, Guid id, List<DatabaseItemEdit> values, ApiCall call);
         void DeleteData(string tablename, List<Guid> values, ApiCall call);
-        Dictionary<string, List<DbTableColumn>> SyncSchema(IRelationalDatabase db);
+        void SyncSchema(ApiCall call);
     }
 }
