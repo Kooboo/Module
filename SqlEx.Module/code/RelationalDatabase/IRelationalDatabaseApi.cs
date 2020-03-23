@@ -4,7 +4,7 @@ using Kooboo.Api;
 using Kooboo.Sites.Models;
 using Kooboo.Web.ViewModel;
 
-namespace SqlEx.Module.RelationalDatabase
+namespace SqlEx.Module.code.RelationalDatabase
 {
     public interface IRelationalDatabaseApi : IApi
     {

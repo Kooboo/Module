@@ -11,7 +11,7 @@ using Kooboo.Sites.Scripting.Interfaces;
 using Kooboo.Web.ViewModel;
 using KScript;
 
-namespace SqlEx.Module.RelationalDatabase
+namespace SqlEx.Module.code.RelationalDatabase
 {
     public abstract class RelationalDatabaseApi<TCommands> : IRelationalDatabaseApi
     where TCommands : IRelationalDatabaseRawCommands, new()

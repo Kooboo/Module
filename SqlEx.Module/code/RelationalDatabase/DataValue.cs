@@ -1,7 +1,7 @@
 ﻿//Copyright (c) 2018 Yardi Technology Limited. Http://www.kooboo.com 
 //All rights reserved.
 
-namespace SqlEx.Module.RelationalDatabase
+namespace SqlEx.Module.code.RelationalDatabase
 {
     public class DataValue
     {

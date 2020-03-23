@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Kooboo.Sites.Models;
-using SqlEx.Module.RelationalDatabase;
+using SqlEx.Module.code.RelationalDatabase;
 
-namespace SqlEx.Module.SqlServer
+namespace SqlEx.Module.code.SqlServer
 {
     public class SqlServerCommands : RelationalDatabaseRawCommands
     {

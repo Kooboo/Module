@@ -3,13 +3,13 @@ using Kooboo.Data.Context;
 using Kooboo.Data.Language;
 using Kooboo.Web.Menus;
 
-namespace SqlEx.Module.MySql
+namespace SqlEx.Module.code.MySql
 {
     public class MySqlTableMenu : ISideBarMenu
     {
         public SideBarSection Parent => SideBarSection.Database;
 
-        public string Name => "mysql.table";
+        public string Name => Hardcoded.GetValue("mysql.table");
 
         public string Icon => "";
 

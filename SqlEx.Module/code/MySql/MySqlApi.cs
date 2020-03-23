@@ -1,17 +1,17 @@
 //Copyright (c) 2018 Yardi Technology Limited. Http://www.kooboo.com 
 //All rights reserved.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Dapper;
 using Kooboo.Api;
 using Kooboo.Sites.Scripting.Interfaces;
 using Kooboo.Web.ViewModel;
 using KScript;
-using SqlEx.Module.RelationalDatabase;
-using System;
-using System.Collections.Generic;
-using System.Linq;
+using SqlEx.Module.code.RelationalDatabase;
 
-namespace SqlEx.Module.MySql
+namespace SqlEx.Module.code.MySql
 {
     public class MySqlApi : RelationalDatabaseApi<MySqlCommands>
     {

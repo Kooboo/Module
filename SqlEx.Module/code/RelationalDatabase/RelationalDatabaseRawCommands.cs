@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using Kooboo.Sites.Models;
 
-namespace SqlEx.Module.RelationalDatabase
+namespace SqlEx.Module.code.RelationalDatabase
 {
     public abstract class RelationalDatabaseRawCommands : IRelationalDatabaseRawCommands
     {
