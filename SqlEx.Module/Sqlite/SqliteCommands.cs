@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Kooboo.Sites.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Kooboo.Sites.Models;
-using Sqlite.Menager.Module.RelationalDatabase;
+using SqlEx.Module.RelationalDatabase;
 
 namespace SqlEx.Module.Sqlite
 {

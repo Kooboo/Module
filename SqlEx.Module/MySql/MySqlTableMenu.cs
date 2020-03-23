@@ -1,9 +1,9 @@
+using System.Collections.Generic;
 using Kooboo.Data.Context;
 using Kooboo.Data.Language;
 using Kooboo.Web.Menus;
-using System.Collections.Generic;
 
-namespace Sqlite.Menager.Module.MySql
+namespace SqlEx.Module.MySql
 {
     public class MySqlTableMenu : ISideBarMenu
     {

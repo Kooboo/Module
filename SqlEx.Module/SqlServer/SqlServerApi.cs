@@ -1,17 +1,17 @@
 //Copyright (c) 2018 Yardi Technology Limited. Http://www.kooboo.com 
 //All rights reserved.
 
-using Kooboo.Api;
-using Kooboo.Sites.Scripting.Interfaces;
-using Kooboo.Web.ViewModel;
-using KScript;
-using Sqlite.Menager.Module.RelationalDatabase;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Kooboo.Api;
 using Kooboo.Sites.Models;
+using Kooboo.Sites.Scripting.Interfaces;
+using Kooboo.Web.ViewModel;
+using KScript;
+using SqlEx.Module.RelationalDatabase;
 
-namespace Sqlite.Menager.Module.SqlServer
+namespace SqlEx.Module.SqlServer
 {
     public class SqlServerApi : RelationalDatabaseApi<SqlServerCommands>
     {

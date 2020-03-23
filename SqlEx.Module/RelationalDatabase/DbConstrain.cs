@@ -1,4 +1,4 @@
-namespace Sqlite.Menager.Module.RelationalDatabase
+namespace SqlEx.Module.RelationalDatabase
 {
     public class DbConstrain
     {

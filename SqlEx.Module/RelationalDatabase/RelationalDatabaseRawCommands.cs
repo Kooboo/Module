@@ -1,11 +1,10 @@
-﻿using Kooboo.Lib.Helper;
-using Kooboo.Sites.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Kooboo.Sites.Models;
 
-namespace Sqlite.Menager.Module.RelationalDatabase
+namespace SqlEx.Module.RelationalDatabase
 {
     public abstract class RelationalDatabaseRawCommands : IRelationalDatabaseRawCommands
     {

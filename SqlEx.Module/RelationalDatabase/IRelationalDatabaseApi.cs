@@ -1,11 +1,10 @@
-using Kooboo.Api;
-using Kooboo.Sites.Models;
-using Kooboo.Sites.Scripting.Interfaces;
-using Kooboo.Web.ViewModel;
 using System;
 using System.Collections.Generic;
+using Kooboo.Api;
+using Kooboo.Sites.Models;
+using Kooboo.Web.ViewModel;
 
-namespace Sqlite.Menager.Module.RelationalDatabase
+namespace SqlEx.Module.RelationalDatabase
 {
     public interface IRelationalDatabaseApi : IApi
     {

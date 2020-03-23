@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Kooboo.Sites.Models;
 
-namespace Sqlite.Menager.Module.RelationalDatabase
+namespace SqlEx.Module.RelationalDatabase
 {
     public interface IRelationalDatabaseRawCommands
     {
