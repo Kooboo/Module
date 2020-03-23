@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Dapper;
 using Kooboo.Api;
+using Kooboo.Sites.Models;
 using Kooboo.Sites.Scripting.Interfaces;
 using Kooboo.Web.ViewModel;
 using KScript;
@@ -55,6 +56,20 @@ namespace SqlEx.Module.code.MySql
                 var dbName = conn.Database;
                 return conn.Query<string>(string.Format(cmd, dbName)).ToList();
             }
+        }
+
+        protected override List<List<DataValue>> ConvertDataValue(IDynamicTableObject[] data, List<DbTableColumn> columns)
+        {
+            var bools = columns.Where(c => c.DataType.ToLower() == "bool").ToArray();
+            return data
+                .Select(x => x.Values.Select(kv =>
+                {
+                    var value = bools.Any(b => b.Name == kv.Key)
+                        ? Convert.ChangeType(kv.Value, typeof(bool))
+                        : kv.Value;
+                    return new DataValue { key = kv.Key, value = value };
+                }).ToList())
+                .ToList();
         }
 
         protected override Type GetClrType(DatabaseItemEdit column)
