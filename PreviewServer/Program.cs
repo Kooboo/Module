@@ -148,7 +148,6 @@ namespace PreviewServer
                     var alldlls = Directory.GetFiles(dllPath, "*.dll", SearchOption.TopDirectoryOnly);
                     foreach (var name in alldlls)
                     {
-
                         var otherAssembly = Assembly.LoadFile(name);
                         AssemblyLoader.AddAssembly(otherAssembly);
                     }
