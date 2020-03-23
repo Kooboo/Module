@@ -1,15 +1,15 @@
-﻿using Kooboo.Api;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Kooboo.Api;
 using Kooboo.Lib.Helper;
 using Kooboo.Sites.Models;
 using Kooboo.Sites.Scripting.Global.Sqlite;
 using Kooboo.Web.ViewModel;
 using KScript;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using Cmd = Sqlite.Menager.Module.code.SqliteCommands;
+using Cmd = SqlEx.Module.Sqlite.SqliteCommands;
 
-namespace Sqlite.Menager.Module.code
+namespace SqlEx.Module.Sqlite
 {
     internal static class SqliteExtensions
     {

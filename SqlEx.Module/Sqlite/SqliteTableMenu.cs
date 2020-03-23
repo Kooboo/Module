@@ -3,7 +3,7 @@ using Kooboo.Data.Context;
 using Kooboo.Data.Language;
 using Kooboo.Web.Menus;
 
-namespace Sqlite.Menager.Module.code
+namespace SqlEx.Module.Sqlite
 {
     public class SqliteTableMenu : ISideBarMenu
     {
