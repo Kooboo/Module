@@ -15,6 +15,10 @@
   </Target>
 
   <ItemGroup>
+    <PackageReference Include="System.Data.SQLite.Core" Version="1.0.112" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Reference Include="Kooboo.Api">
       <HintPath>..\Kooboo\Kooboo.Api.dll</HintPath>
     </Reference>
