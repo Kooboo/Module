@@ -118,6 +118,8 @@ namespace PreviewServer
                 var keys = Kooboo.Data.Language.MultiLingualHelper.GetDomKeys(text);
                 foreach (var key in keys)
                 {
+                    if (string.IsNullOrEmpty(key)) continue;
+                    if (key.Contains("{{") && key.Contains("}}")) continue;
                     allKeys.Add(key);
                 }
             }
