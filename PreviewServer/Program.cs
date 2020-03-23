@@ -146,11 +146,13 @@ namespace PreviewServer
                 {
                     var dllPath = Path.Combine(item, "Debug", "netstandard2.0");
                     var alldlls = Directory.GetFiles(dllPath, "*.dll", SearchOption.TopDirectoryOnly);
+                    var koobooDlls = Directory.GetFiles("../../../../Kooboo", "*.dll", SearchOption.AllDirectories)
+                        .Select(s => Path.GetFileName(s));
                     foreach (var name in alldlls)
                     {
-
-                        var otherAssembly = Assembly.LoadFile(name);
-                        AssemblyLoader.AddAssembly(otherAssembly);
+                        if (koobooDlls.Any(a => a == Path.GetFileName(name))) continue;
+                        var path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "modules", Path.GetFileName(name));
+                        VirtualResources.Entries.TryAdd(Helper.NormalizePath(path), new ModuleFile(name, "module"));
                     }
                 }
                 else

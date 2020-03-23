@@ -2,7 +2,8 @@
   "langs": {
     "zh": {
       "Sqlite": "",
-      "Create table": ""
+      "Create table": "",
+      "sqlite.": "sqlite管理"
     }
   }
 }
