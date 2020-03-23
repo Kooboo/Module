@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <RootNamespace>Sqlite.Menager.Module</RootNamespace>
+    <AssemblyName>Sqlite.Menager.Module</AssemblyName>
+    <ApplicationIcon />
+    <OutputType>Library</OutputType>
+    <StartupObject />
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Kooboo\Kooboo.Web\Kooboo.Web.csproj" />
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="if $(ConfigurationName) == Release call $(SolutionDir)tools\moduleZip.bat $(ProjectDir) $(ProjectName) $(SolutionDir)" />
+  </Target>
+
+</Project>
