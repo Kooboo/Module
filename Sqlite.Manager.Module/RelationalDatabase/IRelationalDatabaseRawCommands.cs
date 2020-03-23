@@ -6,11 +6,9 @@ namespace Sqlite.Menager.Module.RelationalDatabase
 {
     public interface IRelationalDatabaseRawCommands
     {
-        string KoobooSchemaTable { get; }
         string ListTables();
-        string CreateSystemTable();
-        string CreateTableAndSchema(string table, List<DbTableColumn> columns, out object param);
-        string DeleteTables(string[] tables);
+        string CreateTable(string table, List<DbTableColumn> columns);
+        string DeleteTables(string[] tables, char quotationLeft, char quotationRight);
         string UpdateColumn(
             string table,
             List<DbTableColumn> originalColumns,

@@ -9,11 +9,9 @@ namespace Sqlite.Menager.Module.SqlServer
 {
     public class SqlServerCommands : RelationalDatabaseRawCommands
     {
-        public override string DbStringTypeName => "nvarchar";
-
         public override string ListTables()
         {
-            return "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME NOT LIKE '[_]%';";
+            return "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';";
         }
 
         public override string IsExistTable(string table)

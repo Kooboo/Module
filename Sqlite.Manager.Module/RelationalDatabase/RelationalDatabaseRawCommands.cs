@@ -12,25 +12,11 @@ namespace Sqlite.Menager.Module.RelationalDatabase
         protected const string IndexNameFormat = "idx_{0}_{1}";
         protected const string UniqueNameFormat = "idx_uniq_{0}_{1}";
 
-        public virtual string DbStringTypeName => "TEXT";
-
-        public string KoobooSchemaTable => "_sys_kooboo_schema";
-
         public abstract string ListTables();
 
         public abstract string IsExistTable(string table);
 
-        public string CreateSystemTable()
-        {
-            var columns = new List<DbTableColumn>
-            {
-                new DbTableColumn { Name = "table_name", IsPrimaryKey = true, DataType = DbStringTypeName, Length = 512 },
-                new DbTableColumn { Name = "table_schema", DataType = DbStringTypeName },
-            };
-            return CreateTableInternal(KoobooSchemaTable, columns);
-        }
-
-        public string CreateTableAndSchema(string table, List<DbTableColumn> columns, out object param)
+        public string CreateTable(string table, List<DbTableColumn> columns)
         {
             columns = columns ?? new List<DbTableColumn>();
             if (columns.All(x => x.Name != Kooboo.IndexedDB.Dynamic.Constants.DefaultIdFieldName))
@@ -40,21 +26,13 @@ namespace Sqlite.Menager.Module.RelationalDatabase
 
             var sb = new StringBuilder();
             sb.AppendLine(CreateTableInternal(table, columns));
-            sb.AppendLine($"INSERT INTO {KoobooSchemaTable}(table_name, table_schema) VALUES(@tableName, @schema);");
-            param = new
-            {
-                tableName = table,
-                schema = JsonHelper.Serialize(columns)
-            };
 
             return sb.ToString();
         }
 
-        public virtual string DeleteTables(string[] tables)
+        public virtual string DeleteTables(string[] tables, char quotationLeft, char quotationRight)
         {
-            var drops = string.Join("", tables.Select(table => $"DROP TABLE {table};"));
-            var schemas = $"DELETE FROM {KoobooSchemaTable} WHERE table_name in ('" + string.Join("', '", tables) + "');";
-            return drops + "\r\n" + schemas;
+            return string.Join("", tables.Select(table => $"DROP TABLE {quotationLeft}{table}{quotationRight};"));
         }
 
         public abstract string UpdateColumn(

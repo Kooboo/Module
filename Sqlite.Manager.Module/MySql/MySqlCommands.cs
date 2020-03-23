@@ -11,7 +11,7 @@ namespace Sqlite.Menager.Module.MySql
     {
         public override string ListTables()
         {
-            return "SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA='{0}' AND TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME NOT LIKE '\\_%';";
+            return "SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA='{0}' AND TABLE_TYPE = 'BASE TABLE';";
         }
 
         public override string IsExistTable(string table)

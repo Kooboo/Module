@@ -11,7 +11,7 @@ namespace Sqlite.Menager.Module.code
     {
         public override string ListTables()
         {
-            return "SELECT name FROM sqlite_master WHERE type='table' and name not like '\\_%' ESCAPE '\\';";
+            return "SELECT name FROM sqlite_master WHERE type='table';";
         }
 
         public override string IsExistTable(string table)
