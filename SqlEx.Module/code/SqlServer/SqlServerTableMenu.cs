@@ -1,21 +1,21 @@
+using System.Collections.Generic;
 using Kooboo.Data.Context;
 using Kooboo.Data.Language;
 using Kooboo.Web.Menus;
-using System.Collections.Generic;
 
-namespace SqlEx.Module.Sqlite
+namespace SqlEx.Module.code.SqlServer
 {
-    public class SqliteTableMenu : ISideBarMenu
+    public class SqlServerTableMenu : ISideBarMenu
     {
         public SideBarSection Parent => SideBarSection.Database;
 
-        public string Name => Hardcoded.GetValue("sqlite.table");
+        public string Name => Hardcoded.GetValue("sqlserver.table");
 
         public string Icon => "";
 
-        public string Url => "sqlex.module/sqlite.html";
+        public string Url => "sqlex.module/sqlserver.html";
 
-        public int Order => 4;
+        public int Order => 6;
 
         public List<ICmsMenu> SubItems { get; set; }
 

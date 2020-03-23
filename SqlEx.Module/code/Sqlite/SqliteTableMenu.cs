@@ -3,19 +3,19 @@ using Kooboo.Data.Context;
 using Kooboo.Data.Language;
 using Kooboo.Web.Menus;
 
-namespace SqlEx.Module.SqlServer
+namespace SqlEx.Module.code.Sqlite
 {
-    public class SqlServerTableMenu : ISideBarMenu
+    public class SqliteTableMenu : ISideBarMenu
     {
         public SideBarSection Parent => SideBarSection.Database;
 
-        public string Name => "sqlserver.table";
+        public string Name => Hardcoded.GetValue("sqlite.table");
 
         public string Icon => "";
 
-        public string Url => "sqlex.module/sqlserver.html";
+        public string Url => "sqlex.module/sqlite.html";
 
-        public int Order => 6;
+        public int Order => 4;
 
         public List<ICmsMenu> SubItems { get; set; }
 

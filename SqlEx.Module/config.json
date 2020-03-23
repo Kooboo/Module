@@ -3,7 +3,9 @@
     "zh": {
       "Sqlite": "",
       "Create table": "",
-      "sqlite.table": "sqlite管理"
+      "sqlite.table": "Sqlite管理",
+      "mysql.table": "MySql管理",
+      "sqlserver.table": "SqlServer管理"
     }
   }
 }

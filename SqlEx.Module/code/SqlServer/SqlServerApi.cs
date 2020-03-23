@@ -9,9 +9,9 @@ using Kooboo.Sites.Models;
 using Kooboo.Sites.Scripting.Interfaces;
 using Kooboo.Web.ViewModel;
 using KScript;
-using SqlEx.Module.RelationalDatabase;
+using SqlEx.Module.code.RelationalDatabase;
 
-namespace SqlEx.Module.SqlServer
+namespace SqlEx.Module.code.SqlServer
 {
     public class SqlServerApi : RelationalDatabaseApi<SqlServerCommands>
     {

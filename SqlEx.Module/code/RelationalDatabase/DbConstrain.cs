@@ -1,4 +1,4 @@
-namespace SqlEx.Module.RelationalDatabase
+namespace SqlEx.Module.code.RelationalDatabase
 {
     public class DbConstrain
     {
