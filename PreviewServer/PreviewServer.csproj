@@ -49,4 +49,8 @@
     </Reference>
   </ItemGroup>
 
+  <Target Name="generateLinuxZip" AfterTargets="Publish">
+    <Exec Command="$(SolutionDir)tools\moduleZip.bat $(ProjectDir) SqlEx.Module $(SolutionDir)"></Exec>
+  </Target>
+
 </Project>

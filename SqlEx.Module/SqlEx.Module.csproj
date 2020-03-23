@@ -10,10 +10,6 @@
     <StartupObject />
   </PropertyGroup>
 
-  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-    <Exec Command="if $(ConfigurationName) == Release call $(SolutionDir)tools\moduleZip.bat $(ProjectDir) $(ProjectName) $(SolutionDir)" />
-  </Target>
-
   <ItemGroup>
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.112" />
   </ItemGroup>
