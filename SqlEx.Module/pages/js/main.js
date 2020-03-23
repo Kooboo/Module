@@ -103,7 +103,7 @@
       return sqliteModel.executeGet("Tables", para);
     },
     CreateTable: function(para) {
-      return sqliteModel.executePost("Tables", para);
+        return sqliteModel.executePost("CreateTable", para);
     },
     DeleteTables: function(para) {
       return sqliteModel.executePost("DeleteTables", para);
