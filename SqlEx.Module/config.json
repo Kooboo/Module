@@ -1,0 +1,35 @@
+﻿{
+  "langs": {
+    "zh": {
+      "Sqlite": "",
+      "{{ row }}": "",
+      "{{ Kooboo.text.common.setting }}": "",
+      "Create table": "",
+      "{{name}}": "",
+      "{{item.name}}": "",
+      "{{item.controlType ?\n          Kooboo.columnEditor.controlTypeNames[item.controlType.toLowerCase()] :\n          \"\"}}": "",
+      "{{Kooboo.text.common[item.isPrimaryKey ? 'yes' : 'no']}}": "",
+      "{{ Kooboo.text.common[item.isUnique ? 'yes' : 'no']}}": "",
+      "{{Kooboo.text.common[item.isIndex ? 'yes' : 'no']}}": "",
+      "{{Kooboo.text.common.remove}}": "",
+      "{{Kooboo.text.component.columnEditor.title}}": "",
+      "{{ Kooboo.text.common.name}}": "",
+      "{{columnModel.name}}": "",
+      "{{Kooboo.text.component.fieldEditor.controlType}}": "",
+      "{{item.displayName}}": "",
+      "{{columnModel.controlType?Kooboo.columnEditor.controlTypeNames[columnModel.controlType.toLowerCase()]\n                  : ''}}": "",
+      "{{Kooboo.text.component.columnEditor.incremental}}": "",
+      "{{Kooboo.text.component.columnEditor.seed}}": "",
+      "{{Kooboo.text.component.columnEditor.scale}}": "",
+      "{{Kooboo.text.component.columnEditor.primaryKey}}": "",
+      "{{Kooboo.text.component.columnEditor.unique}}": "",
+      "{{Kooboo.text.component.columnEditor.index}}": "",
+      "{{Kooboo.text.common.save}}": "",
+      "{{Kooboo.text.common.cancel}}": "",
+      "{{Kooboo.text.common.edit}}": "",
+      "{{(item.value || Kooboo.text.common.empty) + ' '}}-": "",
+      "{{' ('+\n                      Kooboo.text.component.columnEditor.unableToChangeSelfIncrementField+')'}}": "",
+      "{{opt.key}}": ""
+    }
+  }
+}
