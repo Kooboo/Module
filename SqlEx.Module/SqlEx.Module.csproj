@@ -19,6 +19,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Reference Include="Dapper">
+      <HintPath>..\Kooboo\Dapper.dll</HintPath>
+    </Reference>
     <Reference Include="Kooboo.Api">
       <HintPath>..\Kooboo\Kooboo.Api.dll</HintPath>
     </Reference>

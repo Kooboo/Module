@@ -1,13 +1,15 @@
 //Copyright (c) 2018 Yardi Technology Limited. Http://www.kooboo.com 
 //All rights reserved.
 
-using System;
-using System.Collections.Generic;
+using Dapper;
 using Kooboo.Api;
 using Kooboo.Sites.Scripting.Interfaces;
 using Kooboo.Web.ViewModel;
 using KScript;
 using SqlEx.Module.RelationalDatabase;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SqlEx.Module.MySql
 {

@@ -13,7 +13,7 @@ namespace SqlEx.Module.SqlServer
 
         public string Icon => "";
 
-        public string Url => "sqlserver.manager.module/sqlserver.html";
+        public string Url => "sqlex.module/sqlserver.html";
 
         public int Order => 6;
 
