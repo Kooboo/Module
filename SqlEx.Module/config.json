@@ -1,20 +1,17 @@
 ﻿{
   "langs": {
     "zh": {
-      "Sqlite": "",
       "Create table": "",
-      "sqlite.table": "Sqlite数据库",
-      "mysql.table": "Mysql数据库",
-      "sqlServer.table": "SqlServer数据库",
-      "Mysql": "",
-      "SqlServer": ""
+      "sqlite.table": "Sqlite表",
+      "mysql.table": "Mysql表",
+      "sqlserver.table": "SqlServer表"
     },
     "en": {
       "Sqlite": "",
       "Create table": "",
-      "sqlite.table": "Sqlite Database",
-      "mysql.table": "Mysql Database",
-      "sqlServer.table": "SqlServer Database"
+      "sqlite.table": "Sqlite Tables",
+      "mysql.table": "Mysql Tables",
+      "sqlserver.table": "SqlServer Tables"
     }
   }
 }

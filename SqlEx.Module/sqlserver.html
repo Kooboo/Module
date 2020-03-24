@@ -1,11 +1,9 @@
 ﻿﻿<!-- #layout name=blank -->
 <div id="app">
-  <div class="page-header">
-    <h1 class="title">SqlServer</h1>
-  </div>
   <kb-sqlex-module-component
     :breads="breads"
     :sql-type="sqlType"
+    :title="title"
   ></kb-sqlex-module-component>
 </div>
 
@@ -27,6 +25,9 @@
           koobooModule.sqlexModule.component.KbSqlexModuleComponent
       },
       data: function() {
+        var sqlType = "SqlServer";
+        var title =
+          Kooboo.text["sqlex.module"][sqlType.toLowerCase() + ".table"];
         return {
           breads: [
             {
@@ -36,10 +37,11 @@
               name: "DASHBOARD"
             },
             {
-              name: "SqlServer"
+              name: title
             }
           ],
-          sqlType: "SqlServer"
+          title: title,
+          sqlType: sqlType
         };
       }
     });
