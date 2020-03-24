@@ -1,0 +1,14 @@
+﻿{
+  "mappings": [
+    {
+      "from": "/_Admin/Images/logo.png",
+      "to": "img/logo.png"
+    }
+  ],
+  "langs": {
+    "zh": {
+      "MyCustom Module page": "我的页面",
+      "CustomMenu": "自定义菜单"
+    }
+  }
+}
