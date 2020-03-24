@@ -18,9 +18,6 @@
       <tr>
         <th>Column name</th>
         <th class="table-short">Control type</th>
-        <th class="table-short">Primary key</th>
-        <th class="table-short">Unique</th>
-        <th class="table-short">Index</th>
         <th class="table-action"></th>
       </tr>
     </thead>
@@ -35,27 +32,6 @@
           {{item.controlType ?
           Kooboo.columnEditor.controlTypeNames[item.controlType.toLowerCase()] :
           ""}}
-        </td>
-        <td>
-          <span
-            class="label label-sm"
-            :class="{'label-default': !item.isPrimaryKey, 'green': item.isPrimaryKey}"
-            >{{Kooboo.text.common[item.isPrimaryKey ? 'yes' : 'no']}}</span
-          >
-        </td>
-        <td>
-          <span
-            class="label label-sm"
-            :class="{ 'label-default': !item.isUnique, 'green': item.isUnique }"
-            >{{ Kooboo.text.common[item.isUnique ? 'yes' : 'no']}}</span
-          >
-        </td>
-        <td>
-          <span
-            class="label label-sm"
-            :class="{ 'label-default': !item.isIndex, 'green': item.isIndex }"
-            >{{Kooboo.text.common[item.isIndex ? 'yes' : 'no']}}</span
-          >
         </td>
         <td>
           <a
@@ -136,17 +112,6 @@
                 </p>
               </div>
             </kb-form-item>
-            <kb-form-item v-if="showStringLengthForm" prop="length">
-              <label class="col-md-3 control-label">Length</label>
-              <div class="col-md-9">
-                <input
-                  type="number"
-                  class="form-control"
-                  min="1"
-                  v-model="columnModel.length"
-                />
-              </div>
-            </kb-form-item>
             <kb-form-item v-kb-collapsein="showOptionForm">
               <label class="col-md-3 control-label">Options</label>
               <div class="col-md-9" v-if="columnModel.setting">
@@ -195,73 +160,8 @@
                 </div>
               </div>
             </kb-form-item>
-            <kb-form-item
-              v-kb-collapsein="columnModel.controlType&&columnModel.controlType.toLowerCase()=='number'"
-            >
-              <div class="col-md-offset-3 col-md-9">
-                <label class="checkbox-inline">
-                  <input
-                    type="checkbox"
-                    v-model="columnModel.isIncremental"
-                    :disabled="disableIncremental"
-                  />
-                  <span>
-                    {{Kooboo.text.component.columnEditor.incremental}}</span
-                  >
-                </label>
-              </div>
-            </kb-form-item>
-            <kb-form-item
-              v-kb-collapsein="columnModel.isIncremental"
-              prop="seed"
-            >
-              <label class="col-md-3 control-label"
-                >{{Kooboo.text.component.columnEditor.seed}}</label
-              >
-              <div class="col-md-9">
-                <input
-                  type="number"
-                  ref="seedInput"
-                  min="1"
-                  class="form-control"
-                  @keydown="inputNumberOnly"
-                  v-model="columnModel.seed"
-                />
-              </div>
-            </kb-form-item>
-            <kb-form-item
-              v-kb-collapsein="columnModel.isIncremental"
-              prop="scale"
-            >
-              <label class="col-md-3 control-label"
-                >{{Kooboo.text.component.columnEditor.scale}}</label
-              >
-              <div class="col-md-9">
-                <input
-                  type="number"
-                  ref="scaleInput"
-                  min="1"
-                  class="form-control"
-                  @keydown="inputNumberOnly"
-                  v-model="columnModel.scale"
-                />
-              </div>
-            </kb-form-item>
             <kb-form-item>
-              <div class="col-md-offset-3 col-md-9">
-                <label class="checkbox-inline">
-                  <input type="checkbox" v-model="columnModel.isPrimaryKey" />
-                  <span>{{Kooboo.text.component.columnEditor.primaryKey}}</span>
-                </label>
-                <label class="checkbox-inline">
-                  <input type="checkbox" v-model="columnModel.isUnique" />
-                  <span>{{Kooboo.text.component.columnEditor.unique}}</span>
-                </label>
-                <label class="checkbox-inline">
-                  <input type="checkbox" v-model="columnModel.isIndex" />
-                  <span>{{Kooboo.text.component.columnEditor.index}}</span>
-                </label>
-              </div>
+              <div class="col-md-offset-3 col-md-9"></div>
             </kb-form-item>
           </kb-form>
         </div>
@@ -359,15 +259,10 @@
           columnModel: {
             name: "",
             dataType: "String",
-            isIncremental: false,
             seed: 1,
             scale: 1,
-            isIndex: false,
-            isPrimaryKey: false,
-            isUnique: false,
             controlType: "TextBox",
             isSystem: false,
-            length: 1024,
             setting: {
               options: [],
               validations: []
@@ -430,15 +325,10 @@
             this.columnModel = {
               name: "",
               dataType: "String",
-              isIncremental: false,
               seed: 1,
               scale: 1,
-              isIndex: false,
-              isPrimaryKey: false,
-              isUnique: false,
               controlType: "TextBox",
               isSystem: false,
-              length: 1024,
               setting: {
                 options: []
               }
@@ -446,10 +336,6 @@
             this.isNew = true;
           }
           this.showEditColumnModal = true;
-          this.$nextTick(function() {
-            this.$refs.seedInput.onkeydown = this.inputNumberOnly;
-            this.$refs.scaleInput.onkeydown = this.inputNumberOnly;
-          });
         },
         removeColumn: function(item) {
           if (confirm(Kooboo.text.confirm.deleteItem)) {
@@ -503,13 +389,6 @@
             var index = this.columns.indexOf(this.selectedColumn);
             this.columns.splice(index, 1, this.columnModel);
           }
-
-          if (this.columnModel.isPrimaryKey) {
-            this.columns.forEach(function(col) {
-              col.isPrimaryKey = false;
-            });
-            this.columnModel.isPrimaryKey = true;
-          }
           this.showEditColumnModal = false;
         },
         addOption: function(options) {
@@ -552,22 +431,10 @@
           }
         },
         resetColumnModel: function() {
-          this.columnModel.isIncremental = false;
           this.columnModel.seed = 1;
           this.columnModel.scale = 1;
           if (this.columnModel.setting) {
             this.columnModel.setting.options = [];
-          }
-        },
-        inputNumberOnly: function(e) {
-          if (e.keyCode >= 48 && e.keyCode <= 57 /*number*/) {
-            return true;
-          } else if (e.keyCode >= 96 && e.keyCode <= 105 /*number*/) {
-            return true;
-          } else if (e.keyCode == 8 /*BACKSPACE*/) {
-            return true;
-          } else {
-            return false;
           }
         }
       },
@@ -620,24 +487,6 @@
             return find ? groups[find.dataType] : [];
           }
         },
-        disableIncremental: function() {
-          return (
-            this.columnModel.controlType == "Number" &&
-            !this.columnModel.isIncremental &&
-            !this.isNew
-          );
-        },
-        showStringLengthForm: function() {
-          if (!this.columnModel.controlType) {
-            return false;
-          } else {
-            return (
-              ["textbox", "textarea", "tinymce"].indexOf(
-                this.columnModel.controlType.toLowerCase()
-              ) > -1
-            );
-          }
-        },
         showOptionForm: function() {
           if (!this.columnModel.controlType) {
             return false;
@@ -658,32 +507,6 @@
         }
       },
       watch: {
-        "columnModel.isPrimaryKey": function(value) {
-          if (value) this.columnModel.isUnique = true;
-        },
-        "columnModel.isUnique": function(value) {
-          if (value) {
-            this.columnModel.isIndex = true;
-          } else if (
-            this.columnModel.isIncremental ||
-            this.columnModel.isPrimaryKey
-          ) {
-            this.$nextTick(function() {
-              this.columnModel.isUnique = true;
-            });
-          }
-        },
-        "columnModel.isIndex": function(value) {
-          if (!value && this.columnModel.isUnique) {
-            this.$nextTick(function() {
-              this.columnModel.isIndex = true;
-            });
-          }
-        },
-        "columnModel.isIncremental": function(value) {
-          this.columnModel.isUnique = value;
-          this.columnModel.isIndex = value;
-        },
         "columnModel.controlType": function(value) {
           this.columnModel.dataType = Kooboo.columnEditor.controlTypes.find(
             function(f) {

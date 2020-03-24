@@ -10,16 +10,7 @@
             <div :key="index" v-if="!item.isSystem" class="form-group">
               <label class="control-label">{{item.name}}</label>
               <div>
-                <template v-if="item.isIncremental">
-                  <p class="form-control-static">
-                    {{(item.value || Kooboo.text.common.empty) + ' '}}-
-                    <i
-                      >{{' ('+
-                      Kooboo.text.component.columnEditor.unableToChangeSelfIncrementField+')'}}</i
-                    >
-                  </p>
-                </template>
-                <template v-else>
+                <template>
                   <input
                     v-if="item.controlType=='TextBox'"
                     type="text"
