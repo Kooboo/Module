@@ -97,13 +97,18 @@
     });
     return Kooboo.loadJS(newPath);
   };
+  KoobooModule.prototype.getTemplate = function(url) {
+    var newPath = koobooModule.path.resolve(url);
+    return Kooboo.getTemplate(newPath);
+  };
+  KoobooModule.prototype.sqlexModule = { component: {} };
   var sqliteModel = new Kooboo.HttpClientModel("Sqlite");
   KoobooModule.prototype.SqliteModel = {
     Tables: function(para) {
       return sqliteModel.executeGet("Tables", para);
     },
     CreateTable: function(para) {
-        return sqliteModel.executePost("CreateTable", para);
+      return sqliteModel.executePost("CreateTable", para);
     },
     DeleteTables: function(para) {
       return sqliteModel.executePost("DeleteTables", para);
@@ -125,6 +130,66 @@
     },
     UpdateColumn: function(para) {
       return sqliteModel.executePost("UpdateColumn", para);
+    }
+  };
+  var MySqlModel = new Kooboo.HttpClientModel("MySql");
+  KoobooModule.prototype.MySqlModel = {
+    Tables: function(para) {
+      return MySqlModel.executeGet("Tables", para);
+    },
+    CreateTable: function(para) {
+      return MySqlModel.executePost("CreateTable", para);
+    },
+    DeleteTables: function(para) {
+      return MySqlModel.executePost("DeleteTables", para);
+    },
+    GetEdit: function(para) {
+      return MySqlModel.executeGet("GetEdit", para);
+    },
+    Data: function(para) {
+      return MySqlModel.executeGet("Data", para);
+    },
+    DeleteData: function(para) {
+      return MySqlModel.executePost("DeleteData", para);
+    },
+    UpdateData: function(para) {
+      return MySqlModel.executePost("UpdateData", para);
+    },
+    Columns: function(para) {
+      return MySqlModel.executePost("Columns", para);
+    },
+    UpdateColumn: function(para) {
+      return MySqlModel.executePost("UpdateColumn", para);
+    }
+  };
+  var SqlServerModel = new Kooboo.HttpClientModel("SqlServer");
+  KoobooModule.prototype.SqlServerModel = {
+    Tables: function(para) {
+      return SqlServerModel.executeGet("Tables", para);
+    },
+    CreateTable: function(para) {
+      return SqlServerModel.executePost("CreateTable", para);
+    },
+    DeleteTables: function(para) {
+      return SqlServerModel.executePost("DeleteTables", para);
+    },
+    GetEdit: function(para) {
+      return SqlServerModel.executeGet("GetEdit", para);
+    },
+    Data: function(para) {
+      return SqlServerModel.executeGet("Data", para);
+    },
+    DeleteData: function(para) {
+      return SqlServerModel.executePost("DeleteData", para);
+    },
+    UpdateData: function(para) {
+      return SqlServerModel.executePost("UpdateData", para);
+    },
+    Columns: function(para) {
+      return SqlServerModel.executePost("Columns", para);
+    },
+    UpdateColumn: function(para) {
+      return SqlServerModel.executePost("UpdateColumn", para);
     }
   };
   window.koobooModule = new KoobooModule();

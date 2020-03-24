@@ -3,16 +3,18 @@
     "zh": {
       "Sqlite": "",
       "Create table": "",
-      "sqlite.table": "Sqlite管理",
-      "mysql.table": "MySql管理",
-      "sqlserver.table": "SqlServer管理"
+      "sqlite.table": "Sqlite数据库",
+      "mysql.table": "Mysql数据库",
+      "sqlServer.table": "SqlServer数据库",
+      "Mysql": "",
+      "SqlServer": ""
     },
     "en": {
       "Sqlite": "",
       "Create table": "",
-      "sqlite.table": "Sqlite Manager",
-      "mysql.table": "MySql Manager",
-      "sqlserver.table": "SqlServer Manager"
+      "sqlite.table": "Sqlite Database",
+      "mysql.table": "Mysql Database",
+      "sqlServer.table": "SqlServer Database"
     }
   }
 }

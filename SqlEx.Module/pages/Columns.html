@@ -341,13 +341,14 @@
         t.displayName;
     });
     var CONTROL_TYPES = Kooboo.columnEditor.controlTypes;
-
+    var vm;
     new Vue({
       el: "#main",
       data: function() {
-        var me = this;
+        vm = this;
         return {
           name: Kooboo.getQueryString("table"),
+          sqlType: Kooboo.getQueryString("sqlType"),
           siteId: Kooboo.getQueryString("SiteId"),
           from: Kooboo.getQueryString("from"),
           columns: [],
@@ -382,8 +383,8 @@
               },
               {
                 validate: function(value) {
-                  if (!me.isNew) return true;
-                  return !me.columns.find(function(f) {
+                  if (!vm.isNew) return true;
+                  return !vm.columns.find(function(f) {
                     return f.name == value;
                   });
                 },
@@ -458,8 +459,7 @@
           }
         },
         onSave: function() {
-          var me = this;
-          me.columns.forEach(function(i) {
+          vm.columns.forEach(function(i) {
             if (i.setting) {
               i.setting.options.forEach(function(o) {
                 delete o.init;
@@ -469,14 +469,16 @@
               i.setting = JSON.stringify(i.setting);
             }
           });
-          koobooModule.SqliteModel.UpdateColumn({
-            tableName: me.name,
-            columns: me.columns
-          }).then(function(res) {
-            if (res.success) {
-              location.href = me.returnUrl;
-            }
-          });
+          koobooModule[vm.sqlType + "Model"]
+            .UpdateColumn({
+              tableName: vm.name,
+              columns: vm.columns
+            })
+            .then(function(res) {
+              if (res.success) {
+                location.href = vm.returnUrl;
+              }
+            });
         },
         onEditorSave: function() {
           var valid = true;
@@ -570,22 +572,21 @@
         }
       },
       mounted: function() {
-        var me = this;
         if (this.name) {
-          koobooModule.SqliteModel.Columns({ table: this.name }).then(function(
-            res
-          ) {
-            if (res.success) {
-              me.columns = res.model;
-              me.columns.forEach(function(m) {
-                me.handleColumn(m);
-              });
-            } else {
-              setTimeout(function() {
-                location.href = self.returnUrl;
-              }, 1000);
-            }
-          });
+          koobooModule[this.sqlType + "Model"]
+            .Columns({ table: this.name })
+            .then(function(res) {
+              if (res.success) {
+                vm.columns = res.model;
+                vm.columns.forEach(function(m) {
+                  vm.handleColumn(m);
+                });
+              } else {
+                setTimeout(function() {
+                  location.href = self.returnUrl;
+                }, 1000);
+              }
+            });
         } else {
           window.info.fail(Kooboo.text.info.parameterMissing + ": table");
           setTimeout(function() {
@@ -598,23 +599,23 @@
           if (this.from) {
             return koobooModule.recombineUrl(
               koobooModule.getModuleRootPath() + "/pages/Data.html",
-              { SiteId: this.siteId, table: this.name }
+              { SiteId: this.siteId, table: this.name, sqlType: vm.sqlType }
             );
           } else {
             return koobooModule.recombineUrl(
-              koobooModule.getModuleRootPath() + "/sqlite.html",
-              { SiteId: this.siteId }
+              koobooModule.getModuleRootPath() +
+                `/${vm.sqlType.toLowerCase()}.html`,
+              { SiteId: this.siteId, sqlType: vm.sqlType }
             );
           }
         },
         availableControlTypes: function() {
-          var me = this;
           if (this.isNew) {
             return Kooboo.columnEditor.controlTypes;
           } else {
             var groups = _.groupBy(CONTROL_TYPES, "dataType"),
               find = _.find(CONTROL_TYPES, function(ct) {
-                return ct.value == me.columnModel.controlType;
+                return ct.value == vm.columnModel.controlType;
               });
             return find ? groups[find.dataType] : [];
           }

@@ -137,159 +137,169 @@
       "/_Admin/Styles/bootstrap-datetimepicker.min.css",
       "/_Admin/Scripts/lib/bootstrap-switch/bootstrap-switch.min.css"
     ]);
-  })();
-
-  new Vue({
-    el: "#main",
-    data: function() {
-      return {
-        columns: [],
-        table: Kooboo.getQueryString("table"),
-        id: Kooboo.getQueryString("id") || Kooboo.Guid.Empty,
-        mediaDialogData: {},
-        siteId: Kooboo.getQueryString("SiteId")
-      };
-    },
-    mounted: function() {
-      var me = this;
-      Kooboo.EventBus.subscribe("ko/style/list/pickimage/show", function(ctx) {
-        Kooboo.Media.getList().then(function(res) {
-          if (res.success) {
-            res.model["show"] = true;
-            res.model["context"] = ctx;
-            res.model["onAdd"] = function(selected) {
-              ctx.settings.file_browser_callback(
-                ctx.field_name,
-                selected.url + "?SiteId=" + Kooboo.getQueryString("SiteId"),
-                ctx.type,
-                ctx.win,
-                true
-              );
-            };
-            me.mediaDialogData = res.model;
-          }
-        });
-      });
-      koobooModule.SqliteModel.GetEdit({
-        tableName: me.table,
-        id: me.id
-      }).then(function(res) {
-        if (res.success) {
-          me.columns = res.model.map(function(data) {
-            if (
-              data.controlType &&
-              data.controlType.toLowerCase() == "checkbox"
-            ) {
-              var value = null;
-              if ($.isArray(data.value)) {
-                value = data.value;
-              } else {
-                try {
-                  value = JSON.parse(data.value);
-                } catch (ex) {
-                  value = [];
-                }
-              }
-              data.value = value || [];
-            } else if (
-              data.controlType &&
-              data.controlType.toLowerCase() == "tinymce"
-            ) {
-              data.value = data.value;
-            } else if (
-              data.controlType &&
-              data.controlType.toLowerCase() == "datetime"
-            ) {
-              if (data.value && data.value.indexOf(".") > -1) {
-                data.value = data.value.split(".")[0];
-              }
-            }
-
-            var setting = JSON.parse(data.setting);
-            if (setting && setting.options && setting.options.length) {
-              data.options = setting.options;
-              if (
-                data.options &&
-                data.options.length &&
-                data.controlType &&
-                data.controlType.toLowerCase() == "selection" &&
-                !data.value
-              ) {
-                data.value = data.options[0].value;
-              }
-            }
-
-            if (setting && setting.validations && setting.validations.length) {
-              data.validations = setting.validations;
-            }
-            return data;
-          });
-        }
-      });
-    },
-    methods: {
-      richeditor: function(data) {
-        var self = this;
-        var item = {
-          value: data,
-          mediaDialogData: null
+    var vm;
+    new Vue({
+      el: "#main",
+      data: function() {
+        vm = this;
+        return {
+          sqlType: Kooboo.getQueryString("sqlType"),
+          columns: [],
+          table: Kooboo.getQueryString("table"),
+          id: Kooboo.getQueryString("id") || Kooboo.Guid.Empty,
+          mediaDialogData: {},
+          siteId: Kooboo.getQueryString("SiteId")
         };
-        item = Vue.observable(item);
-        this.$watch(
-          function() {
-            return item.mediaDialogData;
-          },
-          function(value) {
-            self.mediaDialogData = value;
-          }
-        );
-
-        return item;
       },
-      onSave: function() {
-        var me = this;
-        var values = this.columns.map(function(col) {
-          var value = col.value;
+      mounted: function() {
+        Kooboo.EventBus.subscribe("ko/style/list/pickimage/show", function(
+          ctx
+        ) {
+          Kooboo.Media.getList().then(function(res) {
+            if (res.success) {
+              res.model["show"] = true;
+              res.model["context"] = ctx;
+              res.model["onAdd"] = function(selected) {
+                ctx.settings.file_browser_callback(
+                  ctx.field_name,
+                  selected.url + "?SiteId=" + Kooboo.getQueryString("SiteId"),
+                  ctx.type,
+                  ctx.win,
+                  true
+                );
+              };
+              vm.mediaDialogData = res.model;
+            }
+          });
+        });
+        koobooModule[vm.sqlType + "Model"]
+          .GetEdit({
+            tableName: vm.table,
+            id: vm.id
+          })
+          .then(function(res) {
+            if (res.success) {
+              vm.columns = res.model.map(function(data) {
+                if (
+                  data.controlType &&
+                  data.controlType.toLowerCase() == "checkbox"
+                ) {
+                  var value = null;
+                  if ($.isArray(data.value)) {
+                    value = data.value;
+                  } else {
+                    try {
+                      value = JSON.parse(data.value);
+                    } catch (ex) {
+                      value = [];
+                    }
+                  }
+                  data.value = value || [];
+                } else if (
+                  data.controlType &&
+                  data.controlType.toLowerCase() == "tinymce"
+                ) {
+                  data.value = data.value;
+                } else if (
+                  data.controlType &&
+                  data.controlType.toLowerCase() == "datetime"
+                ) {
+                  if (data.value && data.value.indexOf(".") > -1) {
+                    data.value = data.value.split(".")[0];
+                  }
+                }
 
-          if ($.isArray(col.value)) {
-            value = JSON.stringify(col.value);
-          }
+                var setting = JSON.parse(data.setting);
+                if (setting && setting.options && setting.options.length) {
+                  data.options = setting.options;
+                  if (
+                    data.options &&
+                    data.options.length &&
+                    data.controlType &&
+                    data.controlType.toLowerCase() == "selection" &&
+                    !data.value
+                  ) {
+                    data.value = data.options[0].value;
+                  }
+                }
 
-          if (col.value && col.value.value) {
-            value = col.value.value;
-          }
-
-          return {
-            name: col.name,
-            value: value
+                if (
+                  setting &&
+                  setting.validations &&
+                  setting.validations.length
+                ) {
+                  data.validations = setting.validations;
+                }
+                return data;
+              });
+            }
+          });
+      },
+      methods: {
+        richeditor: function(data) {
+          var self = this;
+          var item = {
+            value: data,
+            mediaDialogData: null
           };
-        });
-        koobooModule.SqliteModel.UpdateData({
-          tableName: this.table,
-          id: this.id,
-          values: values
-        }).then(function(res) {
-          if (res.success) {
-            location.href = me.dataPageUrl;
+          item = Vue.observable(item);
+          this.$watch(
+            function() {
+              return item.mediaDialogData;
+            },
+            function(value) {
+              self.mediaDialogData = value;
+            }
+          );
+
+          return item;
+        },
+        onSave: function() {
+          var values = this.columns.map(function(col) {
+            var value = col.value;
+
+            if ($.isArray(col.value)) {
+              value = JSON.stringify(col.value);
+            }
+
+            if (col.value && col.value.value) {
+              value = col.value.value;
+            }
+
+            return {
+              name: col.name,
+              value: value
+            };
+          });
+          koobooModule[vm.sqlType + "Model"]
+            .UpdateData({
+              tableName: this.table,
+              id: this.id,
+              values: values
+            })
+            .then(function(res) {
+              if (res.success) {
+                location.href = vm.dataPageUrl;
+              }
+            });
+        },
+        checkBoxInput(list, value) {
+          var index = list.indexOf(value);
+          if (index > -1) {
+            list.splice(index, 1);
+          } else {
+            list.push(value);
           }
-        });
+        }
       },
-      checkBoxInput(list, value) {
-        var index = list.indexOf(value);
-        if (index > -1) {
-          list.splice(index, 1);
-        } else {
-          list.push(value);
+      computed: {
+        dataPageUrl: function() {
+          return koobooModule.recombineUrl(
+            koobooModule.getModuleRootPath() + "/pages/Data.html",
+            { SiteId: this.siteId, table: this.table, sqlType: this.sqlType }
+          );
         }
       }
-    },
-    computed: {
-      dataPageUrl: function() {
-        return koobooModule.recombineUrl(
-          koobooModule.getModuleRootPath() + "/pages/Data.html",
-          { SiteId: this.siteId, table: this.table }
-        );
-      }
-    }
-  });
+    });
+  })();
 </script>
