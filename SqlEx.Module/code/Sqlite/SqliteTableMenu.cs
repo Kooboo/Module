@@ -9,7 +9,7 @@ namespace SqlEx.Module.code.Sqlite
     {
         public SideBarSection Parent => SideBarSection.Database;
 
-        public string Name => Hardcoded.GetValue("sqlite.table");
+        public string Name => "sqlite.table";
 
         public string Icon => "";
 

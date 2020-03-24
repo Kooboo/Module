@@ -9,7 +9,7 @@ namespace SqlEx.Module.code.SqlServer
     {
         public SideBarSection Parent => SideBarSection.Database;
 
-        public string Name => Hardcoded.GetValue("sqlserver.table");
+        public string Name => "sqlserver.table";
 
         public string Icon => "";
 

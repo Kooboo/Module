@@ -9,7 +9,7 @@ namespace SqlEx.Module.code.MySql
     {
         public SideBarSection Parent => SideBarSection.Database;
 
-        public string Name => Hardcoded.GetValue("mysql.table");
+        public string Name => "mysql.table";
 
         public string Icon => "";
 
