@@ -51,6 +51,9 @@
       },
       sqlType: {
         require: true
+      },
+      title: {
+        require: true
       }
     },
     methods: {

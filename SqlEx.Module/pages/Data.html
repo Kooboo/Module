@@ -63,10 +63,10 @@
               name: "DASHBOARD"
             },
             {
-              name: "Sqlite",
+              name: Kooboo.text["sqlex.module"][Kooboo.getQueryString("sqlType").toLowerCase() +  ".table"],
               url: koobooModule.recombineUrl(
-                      koobooModule.getModuleRootPath() + "/sqlite.html",
-                      { SiteId: Kooboo.getQueryString("SiteId"),sqlType:vm.sqlType}
+                      koobooModule.getModuleRootPath() + `/${Kooboo.getQueryString("sqlType").toLowerCase()}.html`,
+                      { SiteId: Kooboo.getQueryString("SiteId"),sqlType:Kooboo.getQueryString("sqlType")}
               )
             },
             {
