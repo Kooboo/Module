@@ -10,9 +10,10 @@
       return {
         tableData: [],
         selectedRows: [],
+        connectError: true,
+        connectErrorMsgs: [],
         showCreateTableModal: false,
         siteId: Kooboo.getQueryString("SiteId"),
-
         createTableModel: {
           name: ""
         },
@@ -57,6 +58,13 @@
       }
     },
     methods: {
+      redictToSystem() {
+        var origin = location.origin;
+        location.href = koobooModule.recombineUrl(
+          origin + "/_Admin/System/CoreSettings",
+          { SiteId: Kooboo.getQueryString("SiteId") }
+        );
+      },
       onDeleteTable() {
         if (confirm(Kooboo.text.confirm.deleteItems)) {
           if (vm.selectedRows.length > 0) {
@@ -103,6 +111,10 @@
         koobooModule[vm.sqlType + "Model"].Tables().then(function(res) {
           if (res.success) {
             vm.tableData = res.model;
+            vm.connectError = false;
+          } else {
+            vm.connectError = true;
+            vm.connectErrorMsgs = res.messages;
           }
         });
       },

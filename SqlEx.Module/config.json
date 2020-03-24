@@ -4,14 +4,20 @@
       "Create table": "",
       "sqlite.table": "Sqlite表",
       "mysql.table": "Mysql表",
-      "sqlserver.table": "SqlServer表"
+      "sqlserver.table": "SqlServer表",
+      "connectfailed": "连接数据库失败",
+      "mysqlConfigTips": "请为mysql添加数据库连接配置在系统配置页面",
+      "sqlserverConfigTips": "请为sqlserver添加数据库连接配置在系统配置页面"
     },
     "en": {
       "Sqlite": "",
       "Create table": "",
       "sqlite.table": "Sqlite Tables",
       "mysql.table": "Mysql Tables",
-      "sqlserver.table": "SqlServer Tables"
+      "sqlserver.table": "SqlServer Tables",
+      "connectfailed": "Connecting database faild",
+      "mysqlConfigTips": "Please add the connection string to the system configuration of the site for the mysql",
+      "sqlserverConfigTips": "Please add the connection string to the system configuration of the site for the sqlServer"
     }
   }
 }

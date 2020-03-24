@@ -3,76 +3,96 @@
     <h1 class="title">{{title}}</h1>
   </div>
   <kb-breadcrumb :breads="breads"></kb-breadcrumb>
-  <div class="navbar navbar-default">
-    <div class="container-fluid">
-      <a @click="createTableHandle" class="btn green navbar-btn"
-        >Create Table</a
-      >
-      <a
-        v-show="selectedRows.length"
-        class="btn red navbar-btn"
-        @click="onDeleteTable"
-        >Delete</a
-      >
-    </div>
-  </div>
-  <kb-table :data="tableData" show-select :selected.sync="selectedRows">
-    <kb-table-column :label="Kooboo.text.common.name">
-      <template v-slot="row">
-        <a class="btn btn-link" @click.stop="" :href="getTableDataUrl(row)">
-          {{ row }}
-        </a>
-      </template>
-    </kb-table-column>
-    <kb-table-column align="right">
-      <template v-slot="row">
-        <a
-          class="btn btn-ms blue"
-          @click.stop=""
-          :href="getTableColumnsUrl(row)"
-        >
-          {{ Kooboo.text.common.setting }}
-        </a>
-      </template>
-    </kb-table-column>
-  </kb-table>
-  <div
-    class="modal fade"
-    data-backdrop="static"
-    data-keyboard="false"
-    v-kb-modal="showCreateTableModal"
-  >
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <button class="close" data-dismiss="modal">
-            <i class="fa fa-close"></i>
-          </button>
-          <h4 class="modal-title">Create table</h4>
-        </div>
-        <div class="modal-body" v-if="showCreateTableModal">
-          <kb-form
-            :model="createTableModel"
-            :rules="createTableModelRules"
-            ref="createTableForm"
-          >
-            <kb-form-item prop="name">
-              <label class="col-md-3 control-label">Table name</label>
-              <div class="col-md-9">
-                <input
-                  type="text"
-                  class="form-control"
-                  v-model="createTableModel.name"
-                />
-              </div>
-            </kb-form-item>
-          </kb-form>
-        </div>
-        <div class="modal-footer">
-          <button class="btn green" @click="onSaveNewTable">Save</button>
-          <button class="btn gray" data-dismiss="modal">Cancel</button>
+
+  <template v-if="connectError">
+    <div class="panel panel-default">
+      <div class="panel panel-default">
+        <div class="panel-body">
+          <blockquote>
+            <p class="text-danger">
+              {{Kooboo.text["sqlex.module"]["connectfailed"]}}
+            </p>
+            <footer style="cursor: pointer" @click="redictToSystem">
+              {{Kooboo.text["sqlex.module"][ sqlType.toLowerCase()+
+              "ConfigTips"]}}
+            </footer>
+          </blockquote>
         </div>
       </div>
     </div>
-  </div>
+  </template>
+  <template v-else>
+    <div class="navbar navbar-default">
+      <div class="container-fluid">
+        <a @click="createTableHandle" class="btn green navbar-btn"
+          >Create Table</a
+        >
+        <a
+          v-show="selectedRows.length"
+          class="btn red navbar-btn"
+          @click="onDeleteTable"
+          >Delete</a
+        >
+      </div>
+    </div>
+    <kb-table :data="tableData" show-select :selected.sync="selectedRows">
+      <kb-table-column :label="Kooboo.text.common.name">
+        <template v-slot="row">
+          <a class="btn btn-link" @click.stop="" :href="getTableDataUrl(row)">
+            {{ row }}
+          </a>
+        </template>
+      </kb-table-column>
+      <kb-table-column align="right">
+        <template v-slot="row">
+          <a
+            class="btn btn-ms blue"
+            @click.stop=""
+            :href="getTableColumnsUrl(row)"
+          >
+            {{ Kooboo.text.common.setting }}
+          </a>
+        </template>
+      </kb-table-column>
+    </kb-table>
+    <div
+      class="modal fade"
+      data-backdrop="static"
+      data-keyboard="false"
+      v-kb-modal="showCreateTableModal"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button class="close" data-dismiss="modal">
+              <i class="fa fa-close"></i>
+            </button>
+            <h4 class="modal-title">Create table</h4>
+          </div>
+          <div class="modal-body" v-if="showCreateTableModal">
+            <kb-form
+              :model="createTableModel"
+              :rules="createTableModelRules"
+              ref="createTableForm"
+            >
+              <kb-form-item prop="name">
+                <label class="col-md-3 control-label">Table name</label>
+                <div class="col-md-9">
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="createTableModel.name"
+                  />
+                </div>
+              </kb-form-item>
+            </kb-form>
+          </div>
+          <div class="modal-footer">
+            <button class="btn green" @click="onSaveNewTable">Save</button>
+            <button class="btn gray" data-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </template>
 </div>
