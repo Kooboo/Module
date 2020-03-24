@@ -1,15 +1,16 @@
 //Copyright (c) 2018 Yardi Technology Limited. Http://www.kooboo.com 
 //All rights reserved.
 
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Kooboo.Api;
+using Kooboo.IndexedDB;
 using Kooboo.Lib.Helper;
 using Kooboo.Sites.Models;
 using Kooboo.Sites.Scripting.Interfaces;
 using Kooboo.Web.ViewModel;
 using KScript;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace SqlEx.Module.code.RelationalDatabase
 {
@@ -18,7 +19,6 @@ namespace SqlEx.Module.code.RelationalDatabase
     {
         protected const string DefaultIdFieldName = Kooboo.IndexedDB.Dynamic.Constants.DefaultIdFieldName;
         protected static readonly IRelationalDatabaseRawCommands Cmd = Activator.CreateInstance<TCommands>();
-        private const string KoobooSchemaTable = "_sys_kooboo_schema";
 
         public abstract string ModelName { get; }
 
@@ -29,7 +29,7 @@ namespace SqlEx.Module.code.RelationalDatabase
         public List<string> Tables(ApiCall call)
         {
             var db = GetDatabase(call);
-            SyncSchema(db, GetSystemSchemaTable(call));
+            SyncSchema(db, GetSchemaObjectStore(call));
             return ListTables(db);
         }
 
@@ -45,7 +45,7 @@ namespace SqlEx.Module.code.RelationalDatabase
             // create table and schema
             var columns = new List<DbTableColumn>();
             db.Execute(Cmd.CreateTable(name, columns));
-            AddSchema(GetSystemSchemaTable(call), name, columns);
+            AddSchema(GetSchemaObjectStore(call), name, columns);
         }
 
         public void DeleteTables(string names, ApiCall call)
@@ -58,7 +58,7 @@ namespace SqlEx.Module.code.RelationalDatabase
             }
 
             db.Execute(Cmd.DeleteTables(tables, db.SqlExecuter.QuotationLeft, db.SqlExecuter.QuotationRight));
-            DeleteTableSchemas(GetSystemSchemaTable(call), tables);
+            DeleteTableSchemas(GetSchemaObjectStore(call), tables);
         }
 
         public bool IsUniqueTableName(string name, ApiCall call)
@@ -70,21 +70,21 @@ namespace SqlEx.Module.code.RelationalDatabase
         public List<DbTableColumn> Columns(string table, ApiCall call)
         {
             var db = GetDatabase(call);
-            SyncSchema(db, GetSystemSchemaTable(call));
-            var columns = GetAllColumns(GetSystemSchemaTable(call), table);
+            SyncSchema(db, GetSchemaObjectStore(call));
+            var columns = GetAllColumns(GetSchemaObjectStore(call), table);
             return columns.Where(x => x.Name != DefaultIdFieldName).ToList();
         }
 
         public void UpdateColumn(string tablename, List<DbTableColumn> columns, ApiCall call)
         {
             var db = GetDatabase(call);
-            var schemaTable = GetSystemSchemaTable(call);
-            var originalColumns = GetAllColumns(schemaTable, tablename);
+            var schemaStore = GetSchemaObjectStore(call);
+            var originalColumns = GetAllColumns(schemaStore, tablename);
             // table not exists, create
             if (originalColumns.Count <= 0)
             {
                 db.Execute(Cmd.CreateTable(tablename, columns));
-                AddSchema(schemaTable, tablename, columns);
+                AddSchema(schemaStore, tablename, columns);
                 return;
             }
 
@@ -105,7 +105,7 @@ namespace SqlEx.Module.code.RelationalDatabase
 
             if (shouldUpdateSchema)
             {
-                UpdateSchema(schemaTable, tablename, columns);
+                UpdateSchema(schemaStore, tablename, columns);
             }
         }
 
@@ -114,7 +114,7 @@ namespace SqlEx.Module.code.RelationalDatabase
             var db = GetDatabase(call);
             var sortfield = call.GetValue("sort", "orderby", "order");
             // verify sortfield. 
-            var columns = GetAllColumns(GetSystemSchemaTable(call), table);
+            var columns = GetAllColumns(GetSchemaObjectStore(call), table);
             if (sortfield != null)
             {
                 var col = columns.FirstOrDefault(o => o.Name == sortfield);
@@ -168,7 +168,7 @@ namespace SqlEx.Module.code.RelationalDatabase
             var result = new List<DatabaseItemEdit>();
 
             var obj = db.GetTable(tablename).get(id);
-            var cloumns = GetAllColumnsForItemEdit(GetSystemSchemaTable(call), tablename);
+            var cloumns = GetAllColumnsForItemEdit(GetSchemaObjectStore(call), tablename);
 
             foreach (var model in cloumns)
             {
@@ -191,7 +191,7 @@ namespace SqlEx.Module.code.RelationalDatabase
         {
             var db = GetDatabase(call);
             var dbTable = db.GetTable(tablename);
-            var columns = GetAllColumnsForItemEdit(GetSystemSchemaTable(call), tablename);
+            var columns = GetAllColumnsForItemEdit(GetSchemaObjectStore(call), tablename);
 
             // edit
             if (id != Guid.Empty)
@@ -250,7 +250,7 @@ namespace SqlEx.Module.code.RelationalDatabase
         public void SyncSchema(ApiCall call)
         {
             var db = GetDatabase(call);
-            SyncSchema(db, GetSystemSchemaTable(call));
+            SyncSchema(db, GetSchemaObjectStore(call));
         }
 
         protected abstract IRelationalDatabase GetDatabase(ApiCall call);
@@ -289,18 +289,17 @@ namespace SqlEx.Module.code.RelationalDatabase
             }).ToArray();
         }
 
-        protected virtual Dictionary<string, List<DbTableColumn>> SyncSchema(IRelationalDatabase db, ITable schemaTable)
+        protected virtual Dictionary<string, List<DbTableColumn>> SyncSchema(IRelationalDatabase db, ObjectStore<string, TableSchema> schemaStore)
         {
             var newCloumnFromDb = new Dictionary<string, List<DbTableColumn>>();
-            var koobooSchemas = schemaTable.findAll($"db_type='{ModelName}'").ToDictionary(
-                x => (string)x.Values["table_name"],
-                x => JsonHelper.Deserialize<List<DbTableColumn>>((string)x.Values["table_schema"]));
+            var all = schemaStore.Where(x => x.DbType == ModelName).SelectAll();
+            var koobooSchemas = all.ToDictionary(x => x.TableName, x => x.Columns);
             var allTables = ListTables(db);
 
             var deletedTables = koobooSchemas.Keys.Except(allTables).ToArray();
             if (deletedTables.Length > 0)
             {
-                DeleteTableSchemas(schemaTable, deletedTables);
+                DeleteTableSchemas(schemaStore, deletedTables);
             }
 
             foreach (var table in allTables)
@@ -321,7 +320,7 @@ namespace SqlEx.Module.code.RelationalDatabase
                         ControlType = Cmd.DbTypeToControlType(s.Type)
                     }).ToList();
 
-                    AddSchema(schemaTable, table, koobooSchema);
+                    AddSchema(schemaStore, table, koobooSchema);
                     newCloumnFromDb.Add(table, koobooSchema);
                 }
                 else
@@ -352,7 +351,7 @@ namespace SqlEx.Module.code.RelationalDatabase
                     if (shouldUpdateSchema)
                     {
                         newCloumnFromDb.Add(table, dbNewColumn);
-                        UpdateSchema(schemaTable, table, newSchema);
+                        UpdateSchema(schemaStore, table, newSchema);
                     }
 
                 }
@@ -361,31 +360,44 @@ namespace SqlEx.Module.code.RelationalDatabase
             return newCloumnFromDb;
         }
 
-        protected virtual ITable GetSystemSchemaTable(ApiCall call)
+        private ObjectStore<string, TableSchema> GetSchemaObjectStore(ApiCall call)
         {
-            return new k(call.Context).Database.GetTable(KoobooSchemaTable);
+            var storeParameters = new ObjectStoreParameters
+            {
+                EnableVersion = false,
+                EnableLog = false,
+            };
+            storeParameters.AddIndex<TableSchema>(x => x.DbType, 30);
+            storeParameters.SetPrimaryKeyField<TableSchema>(o => o.TableName, 128);
+            var database = Kooboo.Data.DB.GetKDatabase(call.WebSite);
+
+            return database.GetOrCreateObjectStore<string, TableSchema>("RelationalTableSchema", storeParameters);
         }
 
-        private List<DbTableColumn> GetAllColumns(ITable schemaTable, string table)
+        private List<DatabaseItemEdit> GetAllColumnsForItemEdit(ObjectStore<string, TableSchema> schemaStore, string table)
         {
-            var columString = GetAllColumnsRow(schemaTable, table);
-            return string.IsNullOrWhiteSpace(columString)
-                ? new List<DbTableColumn>()
-                : JsonHelper.Deserialize<List<DbTableColumn>>(columString);
+            return GetAllColumns(schemaStore, table)
+                .Select(x => new DatabaseItemEdit
+                {
+                    ControlType = x.ControlType,
+                    DataType = x.DataType,
+                    Name = x.Name,
+                    Setting = x.Setting,
+                    IsIncremental = x.IsIncremental,
+                    IsIndex = x.IsIndex,
+                    IsPrimaryKey = x.IsPrimaryKey,
+                    IsSystem = x.IsSystem,
+                    IsUnique = x.IsUnique,
+                    Scale = x.Scale,
+                    Seed = x.Seed
+                })
+                .ToList();
         }
 
-        private List<DatabaseItemEdit> GetAllColumnsForItemEdit(ITable schemaTable, string table)
+        private List<DbTableColumn> GetAllColumns(ObjectStore<string, TableSchema> schemaStore, string table)
         {
-            var columString = GetAllColumnsRow(schemaTable, table);
-            return string.IsNullOrWhiteSpace(columString)
-                ? new List<DatabaseItemEdit>()
-                : JsonHelper.Deserialize<List<DatabaseItemEdit>>(columString);
-        }
-
-        private string GetAllColumnsRow(ITable schemaTable, string table)
-        {
-            var schema = GetSchema(schemaTable, table);
-            return (string)schema?.Values["table_schema"];
+            return schemaStore.Where(x => x.DbType == ModelName && x.TableName == table).FirstOrDefault()?.Columns
+                   ?? new List<DbTableColumn>();
         }
 
         private static void CompareColumnDifferences(
@@ -431,54 +443,21 @@ namespace SqlEx.Module.code.RelationalDatabase
             }
         }
 
-        private void AddSchema(ITable schemaTable, string tableName, List<DbTableColumn> columns)
+        private void AddSchema(ObjectStore<string, TableSchema> schemaStore, string tableName, List<DbTableColumn> columns)
         {
-            var value = new Dictionary<string, object>
-            {
-                { "db_type", ModelName },
-                { "table_name", tableName },
-                { "table_schema", JsonHelper.Serialize(columns) }
-            };
-
-            schemaTable.add(value);
+            schemaStore.add(tableName, new TableSchema { DbType = ModelName, TableName = tableName, Columns = columns });
         }
 
-        private void UpdateSchema(ITable schemaTable, string tableName, List<DbTableColumn> columns)
+        private void UpdateSchema(ObjectStore<string, TableSchema> schemaStore, string tableName, List<DbTableColumn> columns)
         {
-            var schema = GetSchema(schemaTable, tableName);
-            var value = new Dictionary<string, object>
-            {
-                { "db_type", ModelName },
-                { "table_name", tableName },
-                { "table_schema", JsonHelper.Serialize(columns) }
-            };
-
-            if (schema != null)
-            {
-                var id = schema.Values["_id"];
-                schemaTable.update(id, value);
-            }
-            else
-            {
-                schemaTable.add(value);
-            }
+            schemaStore.update(tableName, new TableSchema { DbType = ModelName, TableName = tableName, Columns = columns });
         }
 
-        private IDynamicTableObject GetSchema(ITable schemaTable, string tableName)
+        private void DeleteTableSchemas(ObjectStore<string, TableSchema> schemaStore, string[] tables)
         {
-            return schemaTable
-                .Query($"db_type='{ModelName}' && table_name = '{tableName}'")
-                .take(1)
-                .FirstOrDefault();
-        }
-
-        private void DeleteTableSchemas(ITable schemaTable, string[] tables)
-        {
-            var all = schemaTable.findAll($"db_type='{ModelName}' && table_name IN ('{string.Join("', '", tables)}')");
-            var ids = all.Select(x => x.Values["_id"]).ToArray();
-            foreach (var id in ids)
+            foreach (var table in tables)
             {
-                schemaTable.delete(id);
+                schemaStore.delete(table);
             }
         }
     }
