@@ -101,21 +101,29 @@ namespace SqlEx.Module.code.Sqlite
             var sb = new System.Text.StringBuilder();
             var sql = oldCreateTableSql.Replace("\r", "").Replace("\n", "");
             var oldColumns = new List<string>();
-            var primaryKeyMatch = Regex.Match(sql, "(PRIMARY *KEY *\\([ \"_a-z,]+?\\))", RegexOptions.IgnoreCase);
             string primaryKey = null;
-            if (primaryKeyMatch.Success)
+            if (sql.Contains("_id TEXT PRIMARY KEY"))
             {
-                var columns = ColumnNameRegex.Matches(primaryKeyMatch.Groups[1].Value).Cast<Match>().Select(x => x.Value)
-                    .Except(newColumns.Select(x => x.Name), StringComparer.OrdinalIgnoreCase)
-                    .ToArray();
-                if (columns.Any())
-                {
-                    primaryKey = $"PRIMARY KEY ({string.Join(", ", columns)})";
-                }
+                primaryKey = $"PRIMARY KEY (\"_id\")";
             }
             else
             {
-                sql.Insert(sql.LastIndexOf(")"), ",");
+                var primaryKeyMatch = Regex.Match(sql, "(PRIMARY *KEY *\\([ \"_a-z,]+?\\))", RegexOptions.IgnoreCase);
+                if (primaryKeyMatch.Success)
+                {
+                    var columns = ColumnNameRegex.Matches(primaryKeyMatch.Groups[1].Value).Cast<Match>()
+                        .Select(x => x.Value)
+                        .Except(newColumns.Select(x => x.Name), StringComparer.OrdinalIgnoreCase)
+                        .ToArray();
+                    if (columns.Any())
+                    {
+                        primaryKey = $"PRIMARY KEY ({string.Join(", ", columns)})";
+                    }
+                }
+                else
+                {
+                    sql.Insert(sql.LastIndexOf(")"), ",");
+                }
             }
 
             // add old column
