@@ -44,34 +44,6 @@ namespace SqlEx.Module.code.Sqlite
             return $"SELECT type, name, sql FROM SQLite_master WHERE sql IS NOT NULL AND tbl_name = '{table}';";
         }
 
-        protected override string CreateTableInternal(string table, List<DbTableColumn> columns)
-        {
-            var sb = new StringBuilder();
-            sb.AppendLine($"CREATE TABLE \"{table}\"(");
-
-            var primaryKeys = new List<string>();
-
-            foreach (var column in columns)
-            {
-                if (column.IsPrimaryKey)
-                {
-                    primaryKeys.Add($"\"{column.Name}\"");
-                }
-
-                sb.AppendLine(GenerateColumnDefine(column) + ",");
-            }
-
-            if (primaryKeys.Any())
-            {
-                var primaryKeyString = string.Join(", ", primaryKeys);
-                sb.AppendLine($"PRIMARY KEY ({primaryKeyString})");
-            }
-
-            sb.AppendLine(");");
-
-            return sb.ToString();
-        }
-
         public override string GetPagedData(string table, int totalskip, int pageSize, string sortfield)
         {
             var orderByDesc = string.IsNullOrWhiteSpace(sortfield) ? "" : $"ORDER BY {sortfield} DESC";

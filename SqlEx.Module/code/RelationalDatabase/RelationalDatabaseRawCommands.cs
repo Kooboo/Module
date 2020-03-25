@@ -36,8 +36,6 @@ namespace SqlEx.Module.code.RelationalDatabase
 
         public abstract string DbTypeToControlType(string type);
 
-        protected abstract string CreateTableInternal(string table, List<DbTableColumn> columns);
-
         public List<DbTableColumn> GetDefaultColumns()
         {
             return new List<DbTableColumn>

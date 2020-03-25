@@ -114,22 +114,6 @@ namespace SqlEx.Module.code.SqlServer
             }
         }
 
-        protected override string CreateTableInternal(string table, List<DbTableColumn> columns)
-        {
-            var sb = new StringBuilder();
-            sb.AppendLine($"CREATE TABLE [{table}](");
-
-            foreach (var column in columns)
-            {
-                sb.AppendLine(GenerateColumnDefine(column) + ",");
-            }
-
-            sb.Remove(sb.Length - Environment.NewLine.Length - 1, Environment.NewLine.Length + 1);
-            sb.AppendLine(");");
-
-            return sb.ToString();
-        }
-
         public override string GetPagedData(string table, int totalskip, int pageSize, string sortfield)
         {
             var orderByDesc = string.IsNullOrWhiteSpace(sortfield) ? "" : $"ORDER BY {sortfield} DESC";
