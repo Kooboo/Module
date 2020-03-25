@@ -82,7 +82,7 @@ namespace SqlEx.Module.code.RelationalDatabase
             // table not exists, create
             if (originalColumns.Count <= 0)
             {
-                db.GetTable(tablename).get(1);
+                db.GetTable(tablename).all();
                 originalColumns = Cmd.GetDefaultColumns();
                 AddSchema(schemaStore, tablename, originalColumns);
             }
@@ -351,20 +351,6 @@ namespace SqlEx.Module.code.RelationalDatabase
             return newCloumnFromDb;
         }
 
-        private ObjectStore<string, TableSchema> GetSchemaObjectStore(ApiCall call)
-        {
-            var storeParameters = new ObjectStoreParameters
-            {
-                EnableVersion = false,
-                EnableLog = false,
-            };
-            storeParameters.AddIndex<TableSchema>(x => x.DbType, 30);
-            storeParameters.AddIndex<TableSchema>(x => x.TableName, 120);
-            var database = Kooboo.Data.DB.GetKDatabase(call.WebSite);
-            //database.DeleteObjectStore("RelationalTableSchema");
-            return database.GetOrCreateObjectStore<string, TableSchema>("RelationalTableSchema", storeParameters);
-        }
-
         private List<DatabaseItemEdit> GetAllColumnsForItemEdit(ObjectStore<string, TableSchema> schemaStore, string table)
         {
             return GetAllColumns(schemaStore, table)
@@ -428,27 +414,39 @@ namespace SqlEx.Module.code.RelationalDatabase
             }
         }
 
+        private ObjectStore<string, TableSchema> GetSchemaObjectStore(ApiCall call)
+        {
+            var storeParameters = new ObjectStoreParameters
+            {
+                EnableVersion = false,
+                EnableLog = false,
+            };
+            storeParameters.AddIndex<TableSchema>(x => x.DbType, 30);
+            storeParameters.AddIndex<TableSchema>(x => x.TableName, 120);
+            storeParameters.SetPrimaryKeyField<TableSchema>(x => x.Key, 150);
+            var database = Kooboo.Data.DB.GetKDatabase(call.WebSite);
+            //database.DeleteObjectStore("RelationalTableSchema");
+            return database.GetOrCreateObjectStore<string, TableSchema>("RelationalTableSchema", storeParameters);
+        }
+
         private void AddSchema(ObjectStore<string, TableSchema> schemaStore, string tableName, List<DbTableColumn> columns)
         {
-            schemaStore.add(GetKey(tableName), new TableSchema { DbType = ModelName, TableName = tableName, Columns = columns });
+            var value = new TableSchema { DbType = ModelName, TableName = tableName, Columns = columns };
+            schemaStore.add(value.Key, value);
         }
 
         private void UpdateSchema(ObjectStore<string, TableSchema> schemaStore, string tableName, List<DbTableColumn> columns)
         {
-            schemaStore.update(GetKey(tableName), new TableSchema { DbType = ModelName, TableName = tableName, Columns = columns });
+            var value = new TableSchema { DbType = ModelName, TableName = tableName, Columns = columns };
+            schemaStore.update(value.Key, value);
         }
 
         private void DeleteTableSchemas(ObjectStore<string, TableSchema> schemaStore, string[] tables)
         {
             foreach (var table in tables)
             {
-                schemaStore.delete(GetKey(table));
+                schemaStore.delete(TableSchema.GetKey(ModelName, table));
             }
-        }
-
-        private string GetKey(string table)
-        {
-            return $"{ModelName}_{table}";
         }
     }
 }
