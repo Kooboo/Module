@@ -20,6 +20,10 @@ cmd run
 ## Use
 ```dotnet new kooboomodule -n [you custom project name]```
 
+## Update solution Kooboo dependency
+
+run ```UpdateKooboo.bat``` in your ```[module folder]\tools```
+
 ## Release
 1. Publish PreviewServer
 2. Into ```PreviewServer\bin\Release\netcoreapp2.1\publish``` you can find module zip file
