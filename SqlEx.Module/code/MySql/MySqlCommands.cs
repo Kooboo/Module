@@ -126,65 +126,13 @@ namespace SqlEx.Module.code.MySql
             }
         }
 
-        public override string GetConstrains(string table)
-        {
-            return @"
-SELECT
-	s.TABLE_NAME AS `TABLE`,
-	s.INDEX_NAME AS `NAME`,
-	s.COLUMN_NAME AS `COLUMN`,
-	( CASE WHEN s.INDEX_Name = 'PRIMARY' THEN TRUE ELSE FALSE END ) AS `IsPrimaryKey`,
-	( CASE WHEN s.INDEX_Name = 'PRIMARY' THEN 'PrimaryKey' ELSE 'Index' END ) AS `Type`
-FROM
-	INFORMATION_SCHEMA.STATISTICS s 
-WHERE
-	s.TABLE_SCHEMA = '{0}' 
-	AND s.TABLE_NAME = '" + table + "';";
-        }
-
         protected override string CreateTableInternal(string table, List<DbTableColumn> columns)
         {
             var sb = new StringBuilder();
             sb.AppendLine($"CREATE TABLE `{table}`(");
-
-            var primaryKeys = new List<string>();
-            var indexes = new List<DbTableColumn>();
-            var uniques = new List<DbTableColumn>();
-
             foreach (var column in columns)
             {
-                if (column.IsPrimaryKey)
-                {
-                    primaryKeys.Add($"`{column.Name}`");
-                }
-                else if (column.IsUnique)
-                {
-                    uniques.Add(column);
-                }
-                else if (column.IsIndex)
-                {
-                    indexes.Add(column);
-                }
-
                 sb.AppendLine(GenerateColumnDefine(column) + ",");
-            }
-
-            if (primaryKeys.Any())
-            {
-                var primaryKeyString = string.Join(", ", primaryKeys);
-                sb.AppendLine($"PRIMARY KEY ({primaryKeyString}),");
-            }
-
-            foreach (var column in indexes)
-            {
-                var length = GetIndexLength(column);
-                sb.AppendLine($"INDEX `{string.Format(IndexNameFormat, table, column.Name)}`({column.Name}{length}),");
-            }
-
-            foreach (var column in uniques)
-            {
-                var length = GetIndexLength(column);
-                sb.AppendLine($"UNIQUE INDEX `{string.Format(IndexNameFormat, table, column.Name)}`({column.Name}{length}),");
             }
 
             sb.Remove(sb.Length - Environment.NewLine.Length - 1, Environment.NewLine.Length + 1);
@@ -198,11 +146,10 @@ WHERE
             return $"SELECT * FROM {table} {orderByDesc} LIMIT {totalskip},{pageSize};";
         }
 
-        public override string UpdateColumn(
+        public override string UpdateTable(
             string table,
             List<DbTableColumn> originalColumns,
-            List<DbTableColumn> columns,
-            DbConstrain[] constraints)
+            List<DbTableColumn> columns)
         {
             var sb = new StringBuilder();
             sb.AppendLine($"ALTER TABLE `{table}`");
@@ -215,12 +162,6 @@ WHERE
                 {
                     sb.AppendLine($"ADD {GenerateColumnDefine(column)},");
                 }
-
-                var index = GenerateUpdateIndex(ori ?? new DbTableColumn(), column, table, constraints);
-                if (index != null)
-                {
-                    sb.AppendLine(index);
-                }
             }
 
             // remove column
@@ -232,91 +173,12 @@ WHERE
                     continue;
                 }
 
-                sb.AppendLine(DropColumn(column, constraints));
-            }
-
-            // update primary key
-            var oriPrimaryKey = originalColumns.Where(x => x.IsPrimaryKey).Select(x => x.Name).ToArray();
-            var newPrimaryKey = columns.Where(x => x.IsPrimaryKey).Select(x => x.Name).ToArray();
-            if (oriPrimaryKey.Length != newPrimaryKey.Length || oriPrimaryKey.Except(newPrimaryKey).Any())
-            {
-                var primaryKeys = string.Join("`, `", newPrimaryKey);
-                sb.AppendLine("DROP PRIMARY KEY, " +
-                              $"ADD PRIMARY KEY (`{primaryKeys}`),");
+                sb.AppendLine($"DROP COLUMN `{column.Name}`,");
             }
 
             sb.Remove(sb.Length - Environment.NewLine.Length - 1, Environment.NewLine.Length + 1);
             sb.AppendLine(";");
             return sb.ToString();
-        }
-
-        private string DropColumn(DbTableColumn column, IEnumerable<DbConstrain> constraints)
-        {
-            var columnIndexes = constraints
-                .Where(x => x.Type == DbConstrain.ConstrainType.Index &&
-                            x.Column.Equals(column.Name, StringComparison.OrdinalIgnoreCase));
-            return string.Join(Environment.NewLine, columnIndexes.Select(x => $"DROP INDEX {x.Name},")) +
-                   Environment.NewLine +
-                   $"DROP COLUMN `{column.Name}`,";
-        }
-
-        private string GenerateUpdateIndex(
-            DbTableColumn originalColumn,
-            DbTableColumn newColumn,
-            string table,
-            DbConstrain[] constraints)
-        {
-            if (originalColumn.IsPrimaryKey != newColumn.IsPrimaryKey)
-            {
-                return null;
-            }
-
-            if (originalColumn.IsUnique && !newColumn.IsUnique)
-            {
-                // remove unique index
-                var index = RemoveIndex();
-                if (newColumn.IsIndex)
-                {
-                    index += "\r\n" + AddIndex();
-                }
-
-                return index;
-            }
-
-            if (!originalColumn.IsUnique && newColumn.IsUnique)
-            {
-                // add unique index
-                var length = GetIndexLength(newColumn);
-                return $"ADD UNIQUE INDEX {string.Format(UniqueNameFormat, table, newColumn.Name)}({newColumn.Name}{length}),";
-            }
-
-            if (originalColumn.IsIndex && !newColumn.IsIndex)
-            {
-                // remove index
-                return RemoveIndex();
-            }
-
-            if (!originalColumn.IsIndex && newColumn.IsIndex)
-            {
-                // add index
-                return AddIndex();
-            }
-
-            return null;
-
-            string AddIndex()
-            {
-                var length = GetIndexLength(newColumn);
-                return $"ADD INDEX {string.Format(IndexNameFormat, table, newColumn.Name)}({newColumn.Name}{length}),";
-            }
-
-            string RemoveIndex()
-            {
-                var constraint = constraints.First(x =>
-                    x.Type == DbConstrain.ConstrainType.Index &&
-                    x.Column.Equals(originalColumn.Name, StringComparison.OrdinalIgnoreCase));
-                return $"DROP INDEX {constraint.Name},";
-            }
         }
 
         private string GenerateColumnDefine(DbTableColumn column)
@@ -335,37 +197,11 @@ WHERE
                     break;
                 case "string":
                 default:
-                    dataType = "varchar";
+                    dataType = "text";
                     break;
             }
 
-            if (column.IsIncremental)
-            {
-                return $"`{column.Name}` int(11) NOT NULL AUTO_INCREMENT";
-            }
-
-            if (dataType != "varchar")
-            {
-                return $"`{column.Name}` {dataType}";
-            }
-
-            if (column.IsPrimaryKey && column.Length > 512)
-            {
-                column.Length = 512;
-            }
-
-            var length = column.Length > 0 ? $"({column.Length})" : "(10240)";
-            return $"`{column.Name}` {dataType}{length}";
-        }
-
-        private static string GetIndexLength(DbTableColumn column)
-        {
-            if (column.DataType.ToLower() == "string")
-            {
-                return column.Length <= 512 ? "" : "(512)";
-            }
-
-            return "";
+            return $"`{column.Name}` {dataType}";
         }
     }
 }

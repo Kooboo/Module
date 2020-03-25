@@ -18,7 +18,7 @@ namespace SqlEx.Module.code.RelationalDatabase
     where TCommands : IRelationalDatabaseRawCommands, new()
     {
         protected const string DefaultIdFieldName = Kooboo.IndexedDB.Dynamic.Constants.DefaultIdFieldName;
-        protected static readonly IRelationalDatabaseRawCommands Cmd = Activator.CreateInstance<TCommands>();
+        protected static readonly TCommands Cmd = Activator.CreateInstance<TCommands>();
 
         public abstract string ModelName { get; }
 
@@ -43,9 +43,8 @@ namespace SqlEx.Module.code.RelationalDatabase
             var db = GetDatabase(call);
 
             // create table and schema
-            var columns = new List<DbTableColumn>();
-            db.Execute(Cmd.CreateTable(name, columns));
-            AddSchema(GetSchemaObjectStore(call), name, columns);
+            db.GetTable(name).all();
+            AddSchema(GetSchemaObjectStore(call), name, Cmd.GetDefaultColumns());
         }
 
         public void DeleteTables(string names, ApiCall call)
@@ -83,9 +82,9 @@ namespace SqlEx.Module.code.RelationalDatabase
             // table not exists, create
             if (originalColumns.Count <= 0)
             {
-                db.Execute(Cmd.CreateTable(tablename, columns));
-                AddSchema(schemaStore, tablename, columns);
-                return;
+                db.GetTable(tablename).get(1);
+                originalColumns = Cmd.GetDefaultColumns();
+                AddSchema(schemaStore, tablename, originalColumns);
             }
 
             // update table
@@ -99,8 +98,7 @@ namespace SqlEx.Module.code.RelationalDatabase
 
             if (shouldUpdateTable)
             {
-                var constraints = GetConstrains(db, tablename);
-                db.Execute(Cmd.UpdateColumn(tablename, originalColumns, columns, constraints));
+                UpdateTable(db, tablename, columns, originalColumns);
             }
 
             if (shouldUpdateSchema)
@@ -253,6 +251,11 @@ namespace SqlEx.Module.code.RelationalDatabase
             SyncSchema(db, GetSchemaObjectStore(call));
         }
 
+        protected virtual void UpdateTable(IRelationalDatabase db, string tablename, List<DbTableColumn> columns, List<DbTableColumn> originalColumns)
+        {
+            db.Execute(Cmd.UpdateTable(tablename, originalColumns, columns));
+        }
+
         protected abstract IRelationalDatabase GetDatabase(ApiCall call);
 
         protected abstract Type GetClrType(DatabaseItemEdit column);
@@ -276,24 +279,11 @@ namespace SqlEx.Module.code.RelationalDatabase
                 .ToList();
         }
 
-        protected virtual DbConstrain[] GetConstrains(IRelationalDatabase db, string table)
-        {
-            var constrians = db.Query(Cmd.GetConstrains(table));
-            return constrians.Select(x => new DbConstrain
-            {
-                Table = (string)x.Values["Table"],
-                Column = (string)x.Values["Column"],
-                Name = (string)x.Values["Name"],
-                Type =
-                    (DbConstrain.ConstrainType)Enum.Parse(typeof(DbConstrain.ConstrainType), (string)x.Values["Type"], true)
-            }).ToArray();
-        }
-
         protected virtual Dictionary<string, List<DbTableColumn>> SyncSchema(IRelationalDatabase db, ObjectStore<string, TableSchema> schemaStore)
         {
             var newCloumnFromDb = new Dictionary<string, List<DbTableColumn>>();
             var all = schemaStore.Where(x => x.DbType == ModelName).SelectAll();
-            var koobooSchemas = all.ToDictionary(x => x.TableName, x => x.Columns);
+            var koobooSchemas = all.Where(x => x != null).ToDictionary(x => x.TableName, x => x.Columns);
             var allTables = ListTables(db);
 
             var deletedTables = koobooSchemas.Keys.Except(allTables).ToArray();
@@ -344,7 +334,6 @@ namespace SqlEx.Module.code.RelationalDatabase
                         .ToList();
                     newSchema.AddRange(dbNewColumn);
 
-
                     // updat schema
                     CompareColumnDifferences(koobooSchema, newSchema, out _, out var shouldUpdateSchema);
 
@@ -353,7 +342,6 @@ namespace SqlEx.Module.code.RelationalDatabase
                         newCloumnFromDb.Add(table, dbNewColumn);
                         UpdateSchema(schemaStore, table, newSchema);
                     }
-
                 }
             }
 
@@ -368,9 +356,9 @@ namespace SqlEx.Module.code.RelationalDatabase
                 EnableLog = false,
             };
             storeParameters.AddIndex<TableSchema>(x => x.DbType, 30);
-            storeParameters.SetPrimaryKeyField<TableSchema>(o => o.TableName, 128);
+            storeParameters.AddIndex<TableSchema>(x => x.TableName, 120);
             var database = Kooboo.Data.DB.GetKDatabase(call.WebSite);
-
+            //database.DeleteObjectStore("RelationalTableSchema");
             return database.GetOrCreateObjectStore<string, TableSchema>("RelationalTableSchema", storeParameters);
         }
 
@@ -423,42 +411,41 @@ namespace SqlEx.Module.code.RelationalDatabase
             {
                 var oriCol = oriCols[i];
                 var newCol = newCols[i];
-                if (GetTablePropertiesString(oriCol) != GetTablePropertiesString(newCol))
+                if (oriCol.Name != newCol.Name)
                 {
                     shouldUpdateTable = true;
                     shouldUpdateSchema = true;
                     return;
                 }
 
-                if (oriCol.Setting != newCol.Setting)
+                if (oriCol.ControlType != newCol.ControlType || oriCol.Setting != newCol.Setting)
                 {
                     shouldUpdateSchema = true;
                 }
-            }
-
-            string GetTablePropertiesString(DbTableColumn col)
-            {
-                return col.Name + col.DataType + col.IsIncremental + col.Seed + col.Scale + col.IsIndex +
-                       col.IsPrimaryKey + col.IsUnique + col.ControlType + col.IsSystem + col.Length;
             }
         }
 
         private void AddSchema(ObjectStore<string, TableSchema> schemaStore, string tableName, List<DbTableColumn> columns)
         {
-            schemaStore.add(tableName, new TableSchema { DbType = ModelName, TableName = tableName, Columns = columns });
+            schemaStore.add(GetKey(tableName), new TableSchema { DbType = ModelName, TableName = tableName, Columns = columns });
         }
 
         private void UpdateSchema(ObjectStore<string, TableSchema> schemaStore, string tableName, List<DbTableColumn> columns)
         {
-            schemaStore.update(tableName, new TableSchema { DbType = ModelName, TableName = tableName, Columns = columns });
+            schemaStore.update(GetKey(tableName), new TableSchema { DbType = ModelName, TableName = tableName, Columns = columns });
         }
 
         private void DeleteTableSchemas(ObjectStore<string, TableSchema> schemaStore, string[] tables)
         {
             foreach (var table in tables)
             {
-                schemaStore.delete(table);
+                schemaStore.delete(GetKey(table));
             }
+        }
+
+        private string GetKey(string table)
+        {
+            return $"{ModelName}_{table}";
         }
     }
 }

@@ -27,16 +27,6 @@ namespace SqlEx.Module.code.MySql
             return new k(call.Context).Mysql;
         }
 
-        protected override DbConstrain[] GetConstrains(IRelationalDatabase db, string table)
-        {
-            using (var conn = db.SqlExecuter.CreateConnection())
-            {
-                var cmd = Cmd.GetConstrains(table);
-                var dbName = conn.Database;
-                return conn.Query<DbConstrain>(string.Format(cmd, dbName)).ToArray();
-            }
-        }
-
         protected override bool IsExistTable(IRelationalDatabase db, string name)
         {
             using (var conn = db.SqlExecuter.CreateConnection())

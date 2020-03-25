@@ -39,9 +39,9 @@ namespace SqlEx.Module.code.Sqlite
             return "TextBox";
         }
 
-        public override string GetConstrains(string table)
+        public string GetSqls(string table)
         {
-            return $"SELECT name FROM SQLite_master WHERE type = 'index' AND sql IS NOT NULL AND tbl_name = '{table}';";
+            return $"SELECT type, name, sql FROM SQLite_master WHERE sql IS NOT NULL AND tbl_name = '{table}';";
         }
 
         protected override string CreateTableInternal(string table, List<DbTableColumn> columns)
@@ -50,22 +50,12 @@ namespace SqlEx.Module.code.Sqlite
             sb.AppendLine($"CREATE TABLE \"{table}\"(");
 
             var primaryKeys = new List<string>();
-            var indexes = new List<string>();
-            var uniques = new List<string>();
 
             foreach (var column in columns)
             {
                 if (column.IsPrimaryKey)
                 {
                     primaryKeys.Add($"\"{column.Name}\"");
-                }
-                else if (column.IsUnique)
-                {
-                    uniques.Add(column.Name);
-                }
-                else if (column.IsIndex)
-                {
-                    indexes.Add(column.Name);
                 }
 
                 sb.AppendLine(GenerateColumnDefine(column) + ",");
@@ -79,16 +69,6 @@ namespace SqlEx.Module.code.Sqlite
 
             sb.AppendLine(");");
 
-            foreach (var columnName in indexes)
-            {
-                sb.AppendLine($"CREATE INDEX {string.Format(IndexNameFormat, table, columnName)} ON {table}({columnName});");
-            }
-
-            foreach (var columnName in uniques)
-            {
-                sb.AppendLine($"CREATE UNIQUE INDEX {string.Format(UniqueNameFormat, table, columnName)} ON {table}({columnName});");
-            }
-
             return sb.ToString();
         }
 
@@ -98,37 +78,9 @@ namespace SqlEx.Module.code.Sqlite
             return $"SELECT * FROM {table} {orderByDesc} LIMIT {totalskip},{pageSize};";
         }
 
-        public override string UpdateColumn(
-            string table,
-            List<DbTableColumn> originalColumns,
-            List<DbTableColumn> columns,
-            DbConstrain[] constraints)
+        public override string UpdateTable(string table, List<DbTableColumn> originalColumns, List<DbTableColumn> columns)
         {
-            var sb = new StringBuilder();
-            var oldTable = $"_old_{table}_{DateTime.Now:yyyyMMddHHmmss}";
-
-            // drop index
-            foreach (var constraint in constraints.Where(x => x.Type == DbConstrain.ConstrainType.Index))
-            {
-                sb.AppendLine($"DROP INDEX {constraint.Name};");
-            }
-
-            // rename table
-            sb.AppendLine($"ALTER TABLE {table} RENAME TO {oldTable};");
-            // create new table
-            sb.AppendLine(CreateTableInternal(table, columns));
-            // copy data
-            var intersect = originalColumns.Select(x => x.Name).Intersect(columns.Select(x => x.Name)).ToArray();
-            if (intersect.Any())
-            {
-                var cols = string.Join("\",\"", intersect);
-                sb.AppendLine($"INSERT INTO {table} (\"{cols}\") SELECT \"{cols}\" FROM {oldTable};");
-            }
-
-            // drop old table
-            sb.AppendLine($"DROP TABLE {oldTable};");
-
-            return sb.ToString();
+            throw new NotImplementedException();
         }
 
         private string GenerateColumnDefine(DbTableColumn column)
@@ -149,8 +101,7 @@ namespace SqlEx.Module.code.Sqlite
                     break;
             }
 
-            var length = column.Length > 0 ? $"({column.Length})" : "";
-            return $"\"{column.Name}\" {dataType}{length}";
+            return $"\"{column.Name}\" {dataType}";
         }
     }
 }
