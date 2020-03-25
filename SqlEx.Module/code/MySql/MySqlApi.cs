@@ -54,10 +54,15 @@ namespace SqlEx.Module.code.MySql
             return data
                 .Select(x => x.Values.Select(kv =>
                 {
-                    var value = bools.Any(b => b.Name == kv.Key)
-                        ? Convert.ChangeType(kv.Value, typeof(bool))
-                        : kv.Value;
-                    return new DataValue { key = kv.Key, value = value };
+                    if (kv.Value != null)
+                    {
+                        var value = bools.Any(b => b.Name == kv.Key)
+                            ? Convert.ChangeType(kv.Value, typeof(bool))
+                            : kv.Value;
+                        return new DataValue { key = kv.Key, value = value };
+                    }
+
+                    return new DataValue { key = kv.Key, value = null };
                 }).ToList())
                 .ToList();
         }

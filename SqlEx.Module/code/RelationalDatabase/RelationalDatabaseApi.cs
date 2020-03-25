@@ -174,9 +174,12 @@ namespace SqlEx.Module.code.RelationalDatabase
                 if (obj != null && obj.Values.ContainsKey(model.Name))
                 {
                     var value = obj.Values[model.Name];
-                    model.Value = model.DataType.ToLower() == "bool"
-                        ? Convert.ChangeType(value, typeof(bool))
-                        : value;
+                    if (value != null)
+                    {
+                        model.Value = model.DataType.ToLower() == "bool"
+                            ? Convert.ChangeType(value, typeof(bool))
+                            : value;
+                    }
                 }
 
                 result.Add(model);
