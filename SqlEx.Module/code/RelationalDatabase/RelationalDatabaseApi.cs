@@ -243,7 +243,9 @@ namespace SqlEx.Module.code.RelationalDatabase
                     }
                     else
                     {
-                        add[item.Name] = Kooboo.Lib.Reflection.TypeHelper.ChangeType(value.Value, GetClrType(item));
+                        add[item.Name] = value.Value == null
+                            ? null
+                            : Kooboo.Lib.Reflection.TypeHelper.ChangeType(value.Value, GetClrType(item));
                     }
                 }
             }
