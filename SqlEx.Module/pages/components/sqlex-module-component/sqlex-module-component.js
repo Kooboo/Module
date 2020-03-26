@@ -10,7 +10,7 @@
       return {
         tableData: [],
         selectedRows: [],
-        connectError: true,
+        connectError: false,
         connectErrorMsgs: [],
         showCreateTableModal: false,
         siteId: Kooboo.getQueryString("SiteId"),
