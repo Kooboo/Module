@@ -6,8 +6,10 @@ namespace SqlEx.Module.code.RelationalDatabase
 {
     public interface IRelationalDatabaseRawCommands
     {
+        char QuotationLeft { get; }
+        char QuotationRight { get; }
         string ListTables();
-        string DeleteTables(string[] tables, char quotationLeft, char quotationRight);
+        string DeleteTables(string[] tables);
         string UpdateTable(string table, List<DbTableColumn> originalColumns, List<DbTableColumn> columns);
         string GetTotalCount(string table);
         string GetPagedData(string table, int totalskip, int pageSize, string sortfield);

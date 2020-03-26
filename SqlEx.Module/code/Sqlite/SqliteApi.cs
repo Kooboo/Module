@@ -150,15 +150,26 @@ namespace SqlEx.Module.code.Sqlite
         protected override List<List<DataValue>> ConvertDataValue(IDynamicTableObject[] data, List<DbTableColumn> columns)
         {
             var bools = columns.Where(c => c.DataType.ToLower() == "bool").ToArray();
+            var datetimes = columns.Where(c => c.DataType.ToLower() == "datetime").ToArray();
             return data
                 .Select(x => x.Values.Select(kv =>
                 {
                     if (kv.Value != null)
                     {
-                        var value = bools.Any(b => b.Name == kv.Key)
-                            ? Convert.ChangeType(kv.Value, typeof(bool))
-                            : kv.Value;
-                        return new DataValue { key = kv.Key, value = value };
+                        object value = null;
+                        if (bools.Any(b => b.Name == kv.Key))
+                        {
+                            value = Convert.ChangeType(kv.Value, typeof(bool));
+                        }
+                        else if (datetimes.Any(d => d.Name == kv.Key))
+                        {
+                            if (DateTime.TryParse(kv.Value.ToString(), out var time))
+                            {
+                                value = time;
+                            }
+                        }
+
+                        return new DataValue { key = kv.Key, value = value ?? kv.Value };
                     }
 
                     return new DataValue { key = kv.Key, value = null };

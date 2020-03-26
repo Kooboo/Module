@@ -56,7 +56,7 @@ namespace SqlEx.Module.code.RelationalDatabase
                 return;
             }
 
-            db.Execute(Cmd.DeleteTables(tables, db.SqlExecuter.QuotationLeft, db.SqlExecuter.QuotationRight));
+            db.Execute(Cmd.DeleteTables(tables));
             DeleteTableSchemas(GetSchemaObjectStore(call), tables);
         }
 
@@ -124,7 +124,7 @@ namespace SqlEx.Module.code.RelationalDatabase
 
             if (sortfield == null)
             {
-                var primarycol = columns.FirstOrDefault(o => o.IsPrimaryKey);
+                var primarycol = columns.FirstOrDefault(o => o.IsPrimaryKey) ?? columns.FirstOrDefault();
                 if (primarycol != null)
                 {
                     sortfield = primarycol.Name;
@@ -176,9 +176,19 @@ namespace SqlEx.Module.code.RelationalDatabase
                     var value = obj.Values[model.Name];
                     if (value != null)
                     {
-                        model.Value = model.DataType.ToLower() == "bool"
-                            ? Convert.ChangeType(value, typeof(bool))
-                            : value;
+                        if (model.DataType.ToLower() == "bool")
+                        {
+                            model.Value = Convert.ChangeType(value, typeof(bool));
+                        }
+                        else if (model.DataType.ToLower() == "datetime" && !(value is DateTime))
+                        {
+                            if (DateTime.TryParse(value.ToString(), out var time))
+                            {
+                                model.Value = time;
+                            }
+                        }
+
+                        model.Value = model.Value ?? value;
                     }
                 }
 

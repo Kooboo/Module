@@ -9,6 +9,10 @@ namespace SqlEx.Module.code.SqlServer
 {
     public class SqlServerCommands : RelationalDatabaseRawCommands
     {
+        public override char QuotationLeft => '[';
+
+        public override char QuotationRight => ']';
+
         public override string ListTables()
         {
             return "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';";
@@ -116,9 +120,9 @@ namespace SqlEx.Module.code.SqlServer
 
         public override string GetPagedData(string table, int totalskip, int pageSize, string sortfield)
         {
-            var orderByDesc = string.IsNullOrWhiteSpace(sortfield) ? "" : $"ORDER BY {sortfield} DESC";
+            var orderByDesc = string.IsNullOrWhiteSpace(sortfield) ? "" : $"ORDER BY {Quote(sortfield)} DESC";
             return "SELECT * FROM " +
-                   $"( SELECT ROW_NUMBER () OVER ( {orderByDesc} ) AS RowNum, * FROM {table} ) AS RowConstrainedResult " +
+                   $"( SELECT ROW_NUMBER () OVER ( {orderByDesc} ) AS RowNum, * FROM {Quote(table)} ) AS RowConstrainedResult " +
                    $"WHERE RowNum > {totalskip} AND RowNum <= {totalskip + pageSize}" +
                    "ORDER BY RowNum";
         }
@@ -136,11 +140,11 @@ namespace SqlEx.Module.code.SqlServer
                 var ori = originalColumns.FirstOrDefault(x => x.Name == column.Name);
                 if (ori == null)
                 {
-                    sb.AppendLine($"ALTER TABLE [{table}] ADD {GenerateColumnDefine(column)};");
+                    sb.AppendLine($"ALTER TABLE {Quote(table)} ADD {GenerateColumnDefine(column)};");
                 }
                 else if (ori.Length != column.Length)
                 {
-                    sb.AppendLine($"ALTER TABLE [{table}] ALTER COLUMN {GenerateColumnDefine(column)};");
+                    sb.AppendLine($"ALTER TABLE {Quote(table)} ALTER COLUMN {GenerateColumnDefine(column)};");
                 }
             }
 
@@ -153,7 +157,7 @@ namespace SqlEx.Module.code.SqlServer
                     continue;
                 }
 
-                sb.AppendLine($"ALTER TABLE [{table}] DROP COLUMN [{column.Name}];");
+                sb.AppendLine($"ALTER TABLE {Quote(table)} DROP COLUMN {Quote(column.Name)};");
             }
 
             return sb.ToString();
@@ -180,7 +184,7 @@ namespace SqlEx.Module.code.SqlServer
             }
 
             var length = dataType != "nvarchar" ? "" : "(max)";
-            return $"[{column.Name}] {dataType}{length}";
+            return $"{Quote(column.Name)} {dataType}{length}";
         }
     }
 }

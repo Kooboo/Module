@@ -9,6 +9,9 @@ namespace SqlEx.Module.code.MySql
 {
     public class MySqlCommands : RelationalDatabaseRawCommands
     {
+        public override char QuotationLeft => '`';
+        public override char QuotationRight => '`';
+
         public override string ListTables()
         {
             return "SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA='{0}' AND TABLE_TYPE = 'BASE TABLE';";
@@ -128,8 +131,8 @@ namespace SqlEx.Module.code.MySql
 
         public override string GetPagedData(string table, int totalskip, int pageSize, string sortfield)
         {
-            var orderByDesc = string.IsNullOrWhiteSpace(sortfield) ? "" : $"ORDER BY {sortfield} DESC";
-            return $"SELECT * FROM {table} {orderByDesc} LIMIT {totalskip},{pageSize};";
+            var orderByDesc = string.IsNullOrWhiteSpace(sortfield) ? "" : $"ORDER BY {Quote(sortfield)} DESC";
+            return $"SELECT * FROM {Quote(table)} {orderByDesc} LIMIT {totalskip},{pageSize};";
         }
 
         public override string UpdateTable(
@@ -138,7 +141,7 @@ namespace SqlEx.Module.code.MySql
             List<DbTableColumn> columns)
         {
             var sb = new StringBuilder();
-            sb.AppendLine($"ALTER TABLE `{table}`");
+            sb.AppendLine($"ALTER TABLE {Quote(table)}");
 
             // add column
             foreach (var column in columns)
@@ -159,7 +162,7 @@ namespace SqlEx.Module.code.MySql
                     continue;
                 }
 
-                sb.AppendLine($"DROP COLUMN `{column.Name}`,");
+                sb.AppendLine($"DROP COLUMN {Quote(column.Name)},");
             }
 
             sb.Remove(sb.Length - Environment.NewLine.Length - 1, Environment.NewLine.Length + 1);
@@ -187,7 +190,7 @@ namespace SqlEx.Module.code.MySql
                     break;
             }
 
-            return $"`{column.Name}` {dataType}";
+            return $"{Quote(column.Name)} {dataType}";
         }
     }
 }

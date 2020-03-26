@@ -9,6 +9,9 @@ namespace SqlEx.Module.code.Sqlite
 {
     public class SqliteCommands : RelationalDatabaseRawCommands
     {
+        public override char QuotationLeft => '"';
+        public override char QuotationRight => '"';
+
         public override string ListTables()
         {
             return "SELECT name FROM sqlite_master WHERE type='table';";
@@ -46,34 +49,13 @@ namespace SqlEx.Module.code.Sqlite
 
         public override string GetPagedData(string table, int totalskip, int pageSize, string sortfield)
         {
-            var orderByDesc = string.IsNullOrWhiteSpace(sortfield) ? "" : $"ORDER BY {sortfield} DESC";
-            return $"SELECT * FROM {table} {orderByDesc} LIMIT {totalskip},{pageSize};";
+            var orderByDesc = string.IsNullOrWhiteSpace(sortfield) ? "" : $"ORDER BY {Quote(sortfield)} DESC";
+            return $"SELECT * FROM {Quote(table)} {orderByDesc} LIMIT {totalskip},{pageSize};";
         }
 
         public override string UpdateTable(string table, List<DbTableColumn> originalColumns, List<DbTableColumn> columns)
         {
             throw new NotImplementedException();
-        }
-
-        private string GenerateColumnDefine(DbTableColumn column)
-        {
-            string dataType;
-            switch (column.DataType.ToLower())
-            {
-                case "number":
-                    dataType = "REAL";
-                    break;
-                case "bool":
-                    dataType = "INTEGER";
-                    break;
-                case "string":
-                case "datetime":
-                default:
-                    dataType = "TEXT";
-                    break;
-            }
-
-            return $"\"{column.Name}\" {dataType}";
         }
     }
 }
