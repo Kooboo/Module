@@ -210,10 +210,10 @@ namespace SqlEx.Module.code.RelationalDatabase
             // edit
             if (!string.IsNullOrWhiteSpace(id))
             {
-                var obj = dbTable.get(id).Values;
+                var obj = dbTable.get(id)?.Values;
                 if (obj == null)
                 {
-                    return null;
+                    return "";
                 }
 
                 foreach (var item in columns.Where(o => !o.IsSystem))
@@ -253,7 +253,7 @@ namespace SqlEx.Module.code.RelationalDatabase
                 }
             }
 
-            return dbTable.add(add)?.ToString();
+            return dbTable.add(add)?.ToString() ?? "";
         }
 
         public void DeleteData(string tablename, List<string> values, ApiCall call)
