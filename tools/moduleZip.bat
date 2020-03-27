@@ -14,7 +14,7 @@ if exist %releaseDir%\PreviewServer.dll (del %releaseDir%\PreviewServer.dll)
 for %%i in (%slnDir%Kooboo\*.dll) do (
 	if exist %releaseDir%\%%~nxi (del %releaseDir%\%%~nxi)
 )
-C:\Windows\System32\robocopy  %releaseDir% %releaseDir%modules *.dll /xf Kooboo.*.dll
+C:\Windows\System32\robocopy  %releaseDir% %releaseDir%modules *.dll
 
 ::zip folder
 %slnDir%tools\7z\7z.exe a -tzip %zipFile% %releaseDir%modules\* -r -mx9
