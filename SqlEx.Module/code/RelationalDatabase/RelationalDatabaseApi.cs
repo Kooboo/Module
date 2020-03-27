@@ -234,6 +234,20 @@ namespace SqlEx.Module.code.RelationalDatabase
             }
 
             // add
+            return AddData(dbTable, values, columns);
+        }
+
+        public string AddData(string tablename, List<DatabaseItemEdit> values, ApiCall call)
+        {
+            var db = GetDatabase(call);
+            var dbTable = db.GetTable(tablename);
+            var columns = GetAllColumnsForItemEdit(GetSchemaObjectStore(call), tablename);
+
+            return AddData(dbTable, values, columns);
+        }
+
+        private string AddData(ITable dbTable, List<DatabaseItemEdit> values, List<DatabaseItemEdit> columns)
+        {
             var add = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             foreach (var item in columns.Where(o => !o.IsSystem))
             {
@@ -243,12 +257,22 @@ namespace SqlEx.Module.code.RelationalDatabase
                     if (value == null)
                     {
                         add.Remove(item.Name);
+                        continue;
+                    }
+
+                    if (value.Value == null)
+                    {
+                        add[item.Name] = null;
+                        continue;
+                    }
+
+                    if (item.IsPrimaryKey && value.Value is string s && s == " ")
+                    {
+                        add[item.Name] = null;
                     }
                     else
                     {
-                        add[item.Name] = value.Value == null
-                            ? null
-                            : Kooboo.Lib.Reflection.TypeHelper.ChangeType(value.Value, GetClrType(item));
+                        add[item.Name] = Kooboo.Lib.Reflection.TypeHelper.ChangeType(value.Value, GetClrType(item));
                     }
                 }
             }
