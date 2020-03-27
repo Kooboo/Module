@@ -1,9 +1,7 @@
 ﻿using Kooboo.Data;
-using Kooboo.Dom;
 using Kooboo.IndexedDB;
 using Kooboo.Lib.Compatible;
 using Kooboo.Lib.Helper;
-using Kooboo.Lib.Reflection;
 using Kooboo.Lib.VirtualFile.Zip;
 using Kooboo.Mail;
 using Kooboo.Web;
@@ -22,11 +20,17 @@ namespace PreviewServer
     class Program
     {
         static string[] _langs = new[] { "zh" };
+        static string _koobooPath = "../../../../Kooboo";
+        static string _slnPath = "../../../../Kooboo";
+        static string _modulePath = "../../../../MyCustom.Module";
+
         static void Main(string[] args)
         {
-            WindowSystem.TryPath.Add("../../../../Kooboo");
-            Kooboo.Render.Controller.ModuleFile.ModuleRoots.Add("../../../../");
+            WindowSystem.TryPath.Add(_koobooPath);
+            Kooboo.Render.Controller.ModuleFile.ModuleRoots.Add(_slnPath);
+            AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             AddModule();
+
             CompatibleManager.Instance.Framework.RegisterEncoding();
             GlobalSettings.RootPath = AppSettings.DatabasePath;
 
@@ -48,11 +52,18 @@ namespace PreviewServer
             CompatibleManager.Instance.Framework.ConsoleWait();
         }
 
+        private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
+        {
+            var assemblyName = new AssemblyName(args.Name);
+            var name = assemblyName.Name;
+            var path = Directory.GetFiles(Path.GetFullPath(_koobooPath), $"{name}.dll", SearchOption.AllDirectories).FirstOrDefault();
+            if (path == null) return null;
+            return Assembly.Load(File.ReadAllBytes(path));
+        }
+
         private static void AddModule()
         {
-            var dic = Directory.GetDirectories("../../../../");
-            var moduleDic = dic.First(f => f.ToLower().EndsWith(".module"));
-            moduleDic = Path.GetFullPath(moduleDic);
+            var moduleDic = Path.GetFullPath(_modulePath);
             GenerateLang(moduleDic);
             LoadConfig(moduleDic);
             LoadFiles(moduleDic);
@@ -63,7 +74,7 @@ namespace PreviewServer
         {
             var jsonPath = Path.Combine(moduleDic, "config.json");
 
-            var koobooKeys = XDocument.Load("../../../../Kooboo/Lang/en.xml")
+            var koobooKeys = XDocument.Load(Path.Combine(_koobooPath, "Lang", "en.xml"))
                                       .Root
                                       .Elements()
                                       .Select(s => s.Attribute("id").Value)
@@ -162,7 +173,7 @@ namespace PreviewServer
                 {
                     var dllPath = Path.Combine(item, "Debug", "netstandard2.0");
                     var alldlls = Directory.GetFiles(dllPath, "*.dll", SearchOption.TopDirectoryOnly);
-                    var koobooDlls = Directory.GetFiles("../../../../Kooboo", "*.dll", SearchOption.AllDirectories)
+                    var koobooDlls = Directory.GetFiles(_koobooPath, "*.dll", SearchOption.AllDirectories)
                         .Select(s => Path.GetFileName(s));
                     foreach (var name in alldlls)
                     {
