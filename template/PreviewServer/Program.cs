@@ -21,7 +21,7 @@ namespace PreviewServer
     {
         static string[] _langs = new[] { "zh" };
         static string _koobooPath = "../../../../Kooboo";
-        static string _slnPath = "../../../../Kooboo";
+        static string _slnPath = "../../../../";
         static string _modulePath = "../../../../MyCustom.Module";
 
         static void Main(string[] args)
