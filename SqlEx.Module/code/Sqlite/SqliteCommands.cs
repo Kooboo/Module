@@ -24,7 +24,7 @@ namespace SqlEx.Module.code.Sqlite
 
         public override string DbTypeToDataType(string type)
         {
-            if (type.StartsWith("REAL") || type.StartsWith("INTEGER"))
+            if (type.ToLower().StartsWith("real") || type.ToLower().StartsWith("integer"))
             {
                 return "number";
             }
@@ -34,7 +34,7 @@ namespace SqlEx.Module.code.Sqlite
 
         public override string DbTypeToControlType(string type)
         {
-            if (type.StartsWith("REAL") || type.StartsWith("INTEGER"))
+            if (type.ToLower().StartsWith("real") || type.ToLower().StartsWith("integer"))
             {
                 return "Number";
             }
