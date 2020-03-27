@@ -29,10 +29,10 @@ namespace SqlEx.Module.code.RelationalDatabase
 
         public abstract string GetPagedData(string table, int totalskip, int pageSize, string sortfield);
 
-        public virtual string DeleteData(string table, List<Guid> ids)
+        public virtual string DeleteData(string table, string primaryKey, List<string> ids)
         {
             var idString = string.Join("', '", ids);
-            return $"DELETE FROM {Quote(table)} WHERE _id IN ('{idString}');";
+            return $"DELETE FROM {Quote(table)} WHERE {Quote(primaryKey)} IN ('{idString}');";
         }
 
         public abstract string DbTypeToDataType(string type);

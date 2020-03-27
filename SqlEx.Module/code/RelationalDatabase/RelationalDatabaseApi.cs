@@ -107,7 +107,7 @@ namespace SqlEx.Module.code.RelationalDatabase
             }
         }
 
-        public PagedListViewModel<List<DataValue>> Data(string table, ApiCall call)
+        public PagedListViewModelWithPrimaryKey<List<DataValue>> Data(string table, ApiCall call)
         {
             var db = GetDatabase(call);
             var sortfield = call.GetValue("sort", "orderby", "order");
@@ -134,7 +134,10 @@ namespace SqlEx.Module.code.RelationalDatabase
 
             var pager = ApiHelper.GetPager(call, 30);
 
-            var result = new PagedListViewModel<List<DataValue>>();
+            var result = new PagedListViewModelWithPrimaryKey<List<DataValue>>
+            {
+                PrimaryKey = columns.FirstOrDefault(o => o.IsPrimaryKey)?.Name
+            };
 
             var total = db.Query(Cmd.GetTotalCount(table))[0].Values.First().Value;
             var totalcount = (int)Convert.ChangeType(total, typeof(int));
@@ -198,19 +201,19 @@ namespace SqlEx.Module.code.RelationalDatabase
             return result;
         }
 
-        public Guid UpdateData(string tablename, Guid id, List<DatabaseItemEdit> values, ApiCall call)
+        public string UpdateData(string tablename, string id, List<DatabaseItemEdit> values, ApiCall call)
         {
             var db = GetDatabase(call);
             var dbTable = db.GetTable(tablename);
             var columns = GetAllColumnsForItemEdit(GetSchemaObjectStore(call), tablename);
 
             // edit
-            if (id != Guid.Empty)
+            if (!string.IsNullOrWhiteSpace(id))
             {
                 var obj = dbTable.get(id).Values;
                 if (obj == null)
                 {
-                    return Guid.Empty;
+                    return null;
                 }
 
                 foreach (var item in columns.Where(o => !o.IsSystem))
@@ -250,14 +253,14 @@ namespace SqlEx.Module.code.RelationalDatabase
                 }
             }
 
-            return Guid.Parse(dbTable.add(add).ToString());
+            return dbTable.add(add)?.ToString();
         }
 
-        public void DeleteData(string tablename, List<Guid> values, ApiCall call)
+        public void DeleteData(string tablename, List<string> values, ApiCall call)
         {
             var db = GetDatabase(call);
-
-            db.Execute(Cmd.DeleteData(tablename, values));
+            var primaryKey = db.SqlExecuter.GetSchema(tablename)?.PrimaryKey ?? DefaultIdFieldName;
+            db.Execute(Cmd.DeleteData(tablename, primaryKey, values));
         }
 
         public void SyncSchema(ApiCall call)
@@ -385,8 +388,7 @@ namespace SqlEx.Module.code.RelationalDatabase
 
         private List<DbTableColumn> GetAllColumns(ObjectStore<string, TableSchema> schemaStore, string table)
         {
-            return schemaStore.Where(x => x.DbType == ModelName && x.TableName == table).FirstOrDefault()?.Columns
-                   ?? new List<DbTableColumn>();
+            return schemaStore.get(TableSchema.GetKey(ModelName, table))?.Columns ?? new List<DbTableColumn>();
         }
 
         private static void CompareColumnDifferences(

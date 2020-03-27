@@ -14,10 +14,10 @@ namespace SqlEx.Module.code.RelationalDatabase
         bool IsUniqueTableName(string name, ApiCall call);
         List<DbTableColumn> Columns(string table, ApiCall call);
         void UpdateColumn(string tablename, List<DbTableColumn> columns, ApiCall call);
-        PagedListViewModel<List<DataValue>> Data(string table, ApiCall call);
+        PagedListViewModelWithPrimaryKey<List<DataValue>> Data(string table, ApiCall call);
         List<DatabaseItemEdit> GetEdit(string tablename, string id, ApiCall call);
-        Guid UpdateData(string tablename, Guid id, List<DatabaseItemEdit> values, ApiCall call);
-        void DeleteData(string tablename, List<Guid> values, ApiCall call);
+        string UpdateData(string tablename, string id, List<DatabaseItemEdit> values, ApiCall call);
+        void DeleteData(string tablename, List<string> values, ApiCall call);
         void SyncSchema(ApiCall call);
     }
 }
