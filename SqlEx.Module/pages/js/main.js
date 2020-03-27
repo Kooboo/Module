@@ -119,6 +119,9 @@
     Data: function(para) {
       return sqliteModel.executeGet("Data", para);
     },
+    AddData: function(para) {
+      return sqliteModel.executePost("AddData", para);
+    },
     DeleteData: function(para) {
       return sqliteModel.executePost("DeleteData", para);
     },
@@ -149,6 +152,9 @@
     Data: function(para) {
       return MySqlModel.executeGet("Data", para);
     },
+    AddData: function(para) {
+      return MySqlModel.executePost("AddData", para);
+    },
     DeleteData: function(para) {
       return MySqlModel.executePost("DeleteData", para);
     },
@@ -178,6 +184,9 @@
     },
     Data: function(para) {
       return SqlServerModel.executeGet("Data", para);
+    },
+    AddData: function(para) {
+      return SqlServerModel.executePost("AddData", para);
     },
     DeleteData: function(para) {
       return SqlServerModel.executePost("DeleteData", para);

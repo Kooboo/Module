@@ -28,7 +28,7 @@
     </kb-table-column>
     <kb-table-column width="100px" align="right">
       <template v-slot="row">
-        <a class="btn btn-ms blue" :href="editUrl(row._id)" @click.stop=""
+        <a class="btn btn-ms blue" :href="editUrl(row)" @click.stop=""
           >{{Kooboo.text.common.edit}}</a
         >
       </template>
@@ -88,24 +88,18 @@
       },
       computed: {
         createDataUrl: function() {
+          var paras = {
+            SiteId: vm.siteId,
+            table: Kooboo.getQueryString("table"),
+            sqlType: vm.sqlType,
+            isNewData: "true"
+          };
           if (vm.primaryKey) {
-            return koobooModule.recombineUrl(
-              koobooModule.getModuleRootPath() + "/pages/EditData.html",
-              {
-                SiteId: this.siteId,
-                table: Kooboo.getQueryString("table"),
-                sqlType: this.sqlType,
-                primaryKey: vm.primaryKey
-              }
-            );
+            Object.assign(paras, { primaryKey: vm.primaryKey });
           }
           return koobooModule.recombineUrl(
             koobooModule.getModuleRootPath() + "/pages/EditData.html",
-            {
-              SiteId: this.siteId,
-              table: Kooboo.getQueryString("table"),
-              sqlType: vm.sqlType
-            }
+            paras
           );
         },
         columnsPageUrl: function() {
@@ -154,9 +148,10 @@
         onDelete: function() {
           if (confirm(Kooboo.text.confirm.deleteItems)) {
             var ids = vm.selectedRows.map(function(o) {
-              return o._id;
+              if (o[vm.primaryKey]) {
+                return o[vm.primaryKey];
+              }
             });
-
             koobooModule[vm.sqlType + "Model"]
               .DeleteData({
                 tableName: Kooboo.getQueryString("table"),
@@ -170,27 +165,19 @@
               });
           }
         },
-        editUrl: function(id) {
+        editUrl: function(row) {
+          var paras = {
+            SiteId: vm.siteId,
+            id: row[vm.primaryKey],
+            table: Kooboo.getQueryString("table"),
+            sqlType: vm.sqlType
+          };
           if (vm.primaryKey) {
-            return koobooModule.recombineUrl(
-              koobooModule.getModuleRootPath() + "/pages/EditData.html",
-              {
-                SiteId: vm.siteId,
-                id: id,
-                table: Kooboo.getQueryString("table"),
-                sqlType: vm.sqlType,
-                primaryKey: vm.primaryKey
-              }
-            );
+            Object.assign(paras, { primaryKey: vm.primaryKey });
           }
           return koobooModule.recombineUrl(
             koobooModule.getModuleRootPath() + "/pages/EditData.html",
-            {
-              SiteId: vm.siteId,
-              id: id,
-              table: Kooboo.getQueryString("table"),
-              sqlType: vm.sqlType
-            }
+            paras
           );
         },
         getData: function(pageNr) {

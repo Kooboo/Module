@@ -142,8 +142,9 @@
           columns: [],
           table: Kooboo.getQueryString("table"),
           primaryKey: Kooboo.getQueryString("primaryKey"),
-          id: Kooboo.getQueryString("id") || Kooboo.Guid.Empty,
+          id: Kooboo.getQueryString("id"),
           mediaDialogData: {},
+          isNewData: Kooboo.getQueryString("isNewData"),
           siteId: Kooboo.getQueryString("SiteId")
         };
       },
@@ -171,7 +172,7 @@
         koobooModule[vm.sqlType + "Model"]
           .GetEdit({
             tableName: vm.table,
-            id: vm.id
+            id: vm.isNewData ? Kooboo.Guid.Empty : vm.id
           })
           .then(function(res) {
             if (res.success) {
@@ -232,6 +233,9 @@
                   // equal primaryKey => hide => disableEdit
                 } else if (data.name === vm.primaryKey) {
                   data.status = "disableEdit";
+                  if (!data.value) {
+                    data.status = "";
+                  }
                 } else {
                   data.status = "";
                 }
@@ -273,27 +277,37 @@
             if (col.value && col.value.value) {
               value = col.value.value;
             }
-
-            if ((col.name === "_id" || col.name === vm.primaryKey) && !value) {
-              value = " ";
-              vm.id = value;
-            }
             return {
               name: col.name,
               value: value
             };
           });
-          koobooModule[vm.sqlType + "Model"]
-            .UpdateData({
-              tableName: this.table,
-              id: vm.id,
-              values: values
-            })
-            .then(function(res) {
-              if (res.success) {
-                location.href = vm.dataPageUrl;
-              }
-            });
+          if (vm.isNewData) {
+            vm.id = values[vm.primaryKey];
+            koobooModule[vm.sqlType + "Model"]
+              .AddData({
+                tableName: this.table,
+                id: vm.id,
+                values: values
+              })
+              .then(function(res) {
+                if (res.success) {
+                  location.href = vm.dataPageUrl;
+                }
+              });
+          } else {
+            koobooModule[vm.sqlType + "Model"]
+              .UpdateData({
+                tableName: this.table,
+                id: vm.id,
+                values: values
+              })
+              .then(function(res) {
+                if (res.success) {
+                  location.href = vm.dataPageUrl;
+                }
+              });
+          }
         },
         checkBoxInput(list, value) {
           var index = list.indexOf(value);
