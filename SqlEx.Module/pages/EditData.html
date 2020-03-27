@@ -7,7 +7,11 @@
       >
         <div>
           <template v-for="(item,index) in columns">
-            <div :key="index" v-if="!item.isSystem" class="form-group">
+            <div
+              :key="index"
+              v-if="!item.isSystem && item.status !=='hide'"
+              class="form-group"
+            >
               <label class="control-label">{{item.name}}</label>
               <div>
                 <template>
@@ -16,8 +20,8 @@
                     type="text"
                     class="form-control"
                     v-model="item.value"
+                    :disabled="item.status==='disableEdit'"
                   />
-
                   <textarea
                     v-if="item.controlType=='TextArea'"
                     class="form-control"
@@ -137,6 +141,7 @@
           sqlType: Kooboo.getQueryString("sqlType"),
           columns: [],
           table: Kooboo.getQueryString("table"),
+          primaryKey: Kooboo.getQueryString("primaryKey"),
           id: Kooboo.getQueryString("id") || Kooboo.Guid.Empty,
           mediaDialogData: {},
           siteId: Kooboo.getQueryString("SiteId")
@@ -221,6 +226,15 @@
                 ) {
                   data.validations = setting.validations;
                 }
+                // equal kooboo defalult primaryKey => hide
+                if (data.name === "_id") {
+                  data.status = "hide";
+                  // equal primaryKey => hide => disableEdit
+                } else if (data.name === vm.primaryKey) {
+                  data.status = "disableEdit";
+                } else {
+                  data.status = "";
+                }
                 return data;
               });
             }
@@ -247,6 +261,9 @@
         },
         onSave: function() {
           var values = this.columns.map(function(col) {
+            if (col.hasOwnProperty("status")) {
+              delete col.status;
+            }
             var value = col.value;
 
             if ($.isArray(col.value)) {
