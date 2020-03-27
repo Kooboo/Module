@@ -274,6 +274,10 @@
               value = col.value.value;
             }
 
+            if ((col.name === "_id" || col.name === vm.primaryKey) && !value) {
+              value = " ";
+              vm.id = value;
+            }
             return {
               name: col.name,
               value: value
@@ -282,7 +286,7 @@
           koobooModule[vm.sqlType + "Model"]
             .UpdateData({
               tableName: this.table,
-              id: this.id,
+              id: vm.id,
               values: values
             })
             .then(function(res) {
