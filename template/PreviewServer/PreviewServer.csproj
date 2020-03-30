@@ -53,8 +53,8 @@
     </Reference>
   </ItemGroup>
 
-  <Target Name="generateLinuxZip" AfterTargets="Publish">
-    <Exec Command="$(SolutionDir)tools\moduleZip.bat $(ProjectDir) MyCustom.Module $(SolutionDir)"></Exec>
+  <Target Name="generateZip" AfterTargets="Publish">
+    <Exec Command="(dotnet script -h || dotnet tool install -g dotnet-script) | (dotnet script $(ProjectDir)\..\tools\pack.csx)"></Exec>
   </Target>
 
 </Project>
