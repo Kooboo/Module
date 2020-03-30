@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using Kooboo.Sites.Models;
 using SqlEx.Module.code.RelationalDatabase;
 
@@ -24,7 +25,7 @@ namespace SqlEx.Module.code.MySql
 
         public override string DbTypeToDataType(string type)
         {
-            switch (type.ToLower())
+            switch (RemoveDbTypeLengthAndToLower(type))
             {
                 case "bigint":
                 case "decimal":
@@ -77,7 +78,7 @@ namespace SqlEx.Module.code.MySql
 
         public override string DbTypeToControlType(string type)
         {
-            switch (type.ToLower())
+            switch (RemoveDbTypeLengthAndToLower(type))
             {
                 case "bigint":
                 case "decimal":

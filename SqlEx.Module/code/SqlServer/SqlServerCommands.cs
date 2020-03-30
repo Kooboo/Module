@@ -25,7 +25,7 @@ namespace SqlEx.Module.code.SqlServer
 
         public override string DbTypeToDataType(string type)
         {
-            switch (type.ToLower())
+            switch (RemoveDbTypeLengthAndToLower(type))
             {
                 case "bigint":
                 case "decimal":
@@ -72,7 +72,7 @@ namespace SqlEx.Module.code.SqlServer
 
         public override string DbTypeToControlType(string type)
         {
-            switch (type.ToLower())
+            switch (RemoveDbTypeLengthAndToLower(type))
             {
                 case "bigint":
                 case "decimal":

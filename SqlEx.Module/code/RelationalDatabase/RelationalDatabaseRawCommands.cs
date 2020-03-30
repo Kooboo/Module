@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.RegularExpressions;
 
 namespace SqlEx.Module.code.RelationalDatabase
 {
@@ -59,6 +60,11 @@ namespace SqlEx.Module.code.RelationalDatabase
         public string Quote(string name)
         {
             return $"{QuotationLeft}{name}{QuotationRight}";
+        }
+
+        protected string RemoveDbTypeLengthAndToLower(string dataType)
+        {
+            return Regex.Replace(dataType?.ToLower() ?? "", @"\(.+\)", "");
         }
     }
 }
