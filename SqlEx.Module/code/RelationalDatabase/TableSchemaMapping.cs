@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace SqlEx.Module.code.RelationalDatabase
 {
-    public class TableSchema
+    public class TableSchemaMapping
     {
         public string Key => GetKey(DbType, TableName);
 
