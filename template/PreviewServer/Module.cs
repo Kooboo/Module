@@ -42,13 +42,25 @@ namespace PreviewServer
         static string _slnPath = "../../../../";
         static string _modulePath = "../../../../MyCustom.Module";
 
-        public static void Load() {
+        public static void Load()
+        {
             WindowSystem.TryPath.Add(_koobooPath);
             Kooboo.Render.Controller.ModuleFile.ModuleRoots.Add(_slnPath);
             AppDomain.CurrentDomain.AssemblyResolve += CurrentDomain_AssemblyResolve;
             AddModule();
+            CopyDependency();
         }
 
+        private static void CopyDependency()
+        {
+            var koobooPath = Path.GetFullPath(_koobooPath);
+            var rootDlls = Directory.GetFiles(AppContext.BaseDirectory, "*.dll").Select(s => Path.GetFileName(s));
+            foreach (var item in Directory.GetFiles(koobooPath, "*.dll"))
+            {
+                if (rootDlls.Contains(Path.GetFileName(item))) continue;
+                File.Copy(item, Path.Combine(AppContext.BaseDirectory, Path.GetFileName(item)));
+            }
+        }
 
         private static Assembly CurrentDomain_AssemblyResolve(object sender, ResolveEventArgs args)
         {
