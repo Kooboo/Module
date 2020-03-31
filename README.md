@@ -15,6 +15,11 @@
 
 
 -------
+## Install specify version template
+For example: install v1.0 version
+
+```dotnet script https://raw.githubusercontent.com/Kooboo/Module/master/scripts/install.csx 1.0```
+
 ## Remove
 ```dotnet script https://raw.githubusercontent.com/Kooboo/Module/master/scripts/uninstall.csx```
 
