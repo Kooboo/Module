@@ -1,28 +1,22 @@
 # Kooboo Module
 
 ## Environmental requirement
-1. git
-2. dotnet core 2.1+
+1. dotnet core 2.1+
+2. dotnet script
 
-## Install
-cmd run
+## Install dotnet script
+```dotnet tool install -g dotnet-script```
 
-```git clone https://github.com/Kooboo/Module.git %TMP%\_km && cd %TMP%\_km\template && dotnet new -i ./```
-## Update
-cmd run
+## Install template
+```dotnet script https://raw.githubusercontent.com/Kooboo/Module/master/scripts/install.csx```
 
-```rd /s /q %TMP%\_km &  git clone https://github.com/Kooboo/Module.git %TMP%\_km && cd %TMP%\_km\template && dotnet new -i ./```
-## Remove
-cmd run
-
-```dotnet new -u %TMP%\_km\template && rd /s /q %TMP%\_km```
-
-## Use
+## Create Template
 ```dotnet new kooboomodule -n [you custom project name]```
 
-## Update solution Kooboo dependency
 
-run ```UpdateKooboo.bat``` in your ```[module folder]\tools```
+-------
+## Remove
+```dotnet script https://raw.githubusercontent.com/Kooboo/Module/master/scripts/uninstall.csx```
 
 ## Release
 1. Publish PreviewServer
