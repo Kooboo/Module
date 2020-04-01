@@ -18,7 +18,7 @@ namespace SqlEx.Module.code.RelationalDatabase
     where TCommands : IRelationalDatabaseRawCommands, new()
     {
         protected const string DefaultIdFieldName = Kooboo.IndexedDB.Dynamic.Constants.DefaultIdFieldName;
-        protected static readonly TCommands Cmd = Activator.CreateInstance<TCommands>();
+        protected static TCommands Cmd = Activator.CreateInstance<TCommands>();
 
         public abstract string DbType { get; }
 
