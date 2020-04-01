@@ -261,7 +261,7 @@ namespace SqlEx.Module.code.RelationalDatabase
                         continue;
                     }
 
-                    if (value.Value == null)
+                    if (value.Value == null || (item.IsPrimaryKey && value.Value is string && string.IsNullOrWhiteSpace(value.Value.ToString())))
                     {
                         add[item.Name] = null;
                         continue;
