@@ -134,7 +134,6 @@ namespace SqlEx.Module.code.RelationalDatabase
                 }
             }
 
-
             var pager = ApiHelper.GetPager(call, 30);
 
             var result = new PagedListViewModelWithPrimaryKey<List<DataValue>>
@@ -170,8 +169,7 @@ namespace SqlEx.Module.code.RelationalDatabase
         {
             var db = GetDatabase(call);
             var result = new List<DatabaseItemEdit>();
-
-            var obj = db.GetTable(tablename).get(id);
+            var obj = id == Guid.Empty.ToString() ? null : db.GetTable(tablename).get(id);
             var cloumns = GetAllColumnsForItemEdit(GetSchemaMappingRepository(call), tablename);
 
             foreach (var model in cloumns)
@@ -211,7 +209,7 @@ namespace SqlEx.Module.code.RelationalDatabase
             var columns = GetAllColumnsForItemEdit(GetSchemaMappingRepository(call), tablename);
 
             // edit
-            if (!string.IsNullOrWhiteSpace(id))
+            if (!string.IsNullOrWhiteSpace(id) && id != Guid.Empty.ToString())
             {
                 var obj = dbTable.get(id)?.Values;
                 if (obj == null)
@@ -249,7 +247,7 @@ namespace SqlEx.Module.code.RelationalDatabase
             return AddData(dbTable, values, columns);
         }
 
-        private string AddData(ITable dbTable, List<DatabaseItemEdit> values, List<DatabaseItemEdit> columns)
+        protected virtual string AddData(ITable dbTable, List<DatabaseItemEdit> values, List<DatabaseItemEdit> columns)
         {
             var add = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
             foreach (var item in columns.Where(o => !o.IsSystem))
