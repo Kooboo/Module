@@ -50,7 +50,7 @@
   </ItemGroup>
 
   <Target Name="generateZip" AfterTargets="Publish">
-    <Exec Command="(dotnet script -h || dotnet tool install -g dotnet-script) | (dotnet script $(ProjectDir)\..\tools\pack.csx)"></Exec>
+    <Exec Command="(dotnet script -h || dotnet tool install -g dotnet-script) | (dotnet script &quot;$(ProjectDir)\..\tools\pack.csx&quot;)"></Exec>
   </Target>
 
 </Project>
