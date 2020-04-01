@@ -17,6 +17,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "docs", "docs", "{DF8C9D0D-C
 		README.md = README.md
 	EndProjectSection
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlEx.Module.Tests", "SqlEx.Module.Tests\SqlEx.Module.Tests.csproj", "{676A7E2E-DBED-49FD-A0A7-FDB11A180B1E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -31,6 +33,10 @@ Global
 		{F6730D76-5DFD-4A23-8FAE-BC7DC75440AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F6730D76-5DFD-4A23-8FAE-BC7DC75440AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F6730D76-5DFD-4A23-8FAE-BC7DC75440AB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{676A7E2E-DBED-49FD-A0A7-FDB11A180B1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{676A7E2E-DBED-49FD-A0A7-FDB11A180B1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{676A7E2E-DBED-49FD-A0A7-FDB11A180B1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{676A7E2E-DBED-49FD-A0A7-FDB11A180B1E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
