@@ -1,0 +1,61 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.5.0" />
+    <PackageReference Include="Moq" Version="4.13.1" />
+    <PackageReference Include="Newtonsoft.Json" Version="11.0.1" />
+    <PackageReference Include="xunit" Version="2.4.1" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.4.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="coverlet.collector" Version="1.2.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SqlEx.Module\SqlEx.Module.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Kooboo.Api">
+      <HintPath>..\Kooboo\Kooboo.Api.dll</HintPath>
+    </Reference>
+    <Reference Include="Kooboo.App">
+      <HintPath>..\Kooboo\Kooboo.App.dll</HintPath>
+    </Reference>
+    <Reference Include="Kooboo.Data">
+      <HintPath>..\Kooboo\Kooboo.Data.dll</HintPath>
+    </Reference>
+    <Reference Include="Kooboo.Dom">
+      <HintPath>..\Kooboo\Kooboo.Dom.dll</HintPath>
+    </Reference>
+    <Reference Include="Kooboo.IndexedDB">
+      <HintPath>..\Kooboo\Kooboo.IndexedDB.dll</HintPath>
+    </Reference>
+    <Reference Include="Kooboo.Lib">
+      <HintPath>..\Kooboo\Kooboo.Lib.dll</HintPath>
+    </Reference>
+    <Reference Include="Kooboo.Mail">
+      <HintPath>..\Kooboo\Kooboo.Mail.dll</HintPath>
+    </Reference>
+    <Reference Include="Kooboo.Render">
+      <HintPath>..\Kooboo\Kooboo.Render.dll</HintPath>
+    </Reference>
+    <Reference Include="Kooboo.Search">
+      <HintPath>..\Kooboo\Kooboo.Search.dll</HintPath>
+    </Reference>
+    <Reference Include="Kooboo.Sites">
+      <HintPath>..\Kooboo\Kooboo.Sites.dll</HintPath>
+    </Reference>
+    <Reference Include="Kooboo.Web">
+      <HintPath>..\Kooboo\Kooboo.Web.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
+</Project>
