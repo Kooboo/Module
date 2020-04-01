@@ -13,7 +13,7 @@ namespace SqlEx.Module.code.Sqlite
 
         public string Icon => "";
 
-        public string Url => "sqlex.module/sqlite.html";
+        public string Url => "sqlex.module/index.html?sqlType=Sqlite";
 
         public int Order => 4;
 

@@ -13,7 +13,7 @@ namespace SqlEx.Module.code.MySql
 
         public string Icon => "";
 
-        public string Url => "sqlex.module/mysql.html";
+        public string Url => "sqlex.module/index.html?sqlType=MySql";
 
         public int Order => 5;
 
