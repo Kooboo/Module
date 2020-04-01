@@ -13,13 +13,7 @@
 ## Create Template
 ```dotnet new kooboomodule -n [you custom project name]```
 
-
 -------
-## Install specify version template
-For example: install v1.0 version
-
-```dotnet script https://raw.githubusercontent.com/Kooboo/Module/master/scripts/install.csx 1.0```
-
 ## Remove
 ```dotnet script https://raw.githubusercontent.com/Kooboo/Module/master/scripts/uninstall.csx```
 
@@ -29,4 +23,8 @@ For example: install v1.0 version
 
 ## Integration with Kooboo
 Put you release zip file to ```Kooboo root \modules``` folder
+
+## Update Kooboo lib
+1. Change ```tools\branch.txt```content to you want update branch name
+2. Excute ```tools\update-kooboo.bat```
 
