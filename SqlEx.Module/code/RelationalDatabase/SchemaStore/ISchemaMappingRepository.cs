@@ -3,10 +3,9 @@ using Kooboo.Sites.Models;
 
 namespace SqlEx.Module.code.RelationalDatabase.SchemaStore
 {
-    public interface ISchemaMappingStore
+    public interface ISchemaMappingRepository
     {
-        void AddSchema(string tableName, List<DbTableColumn> columns);
-        void UpdateSchema(string tableName, List<DbTableColumn> columns);
+        void AddOrUpdateSchema(string tableName, List<DbTableColumn> columns);
         void DeleteTableSchemas(string[] tables);
         List<TableSchemaMapping> SelectAll();
         List<DbTableColumn> GetColumns(string table);
