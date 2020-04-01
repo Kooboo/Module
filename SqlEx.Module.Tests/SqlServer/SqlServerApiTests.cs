@@ -10,7 +10,7 @@ using Xunit;
 
 namespace SqlEx.Module.Tests.SqlServer
 {
-    public class SqlServerTests
+    public class SqlServerApiTests
     {
         [Fact]
         public void DbType_Should_Be_MySql()
