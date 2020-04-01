@@ -69,7 +69,7 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
             api.UpdateTable(db.Object, "table1", columns, originalColumns);
 
             db.Verify(x => x.Execute("UpdateTable"), Times.Once);
-            api.MockCmd.Verify(x => x.UpdateTable("table1", columns, originalColumns), Times.Once);
+            api.MockCmd.Verify(x => x.UpdateTable("table1", columns, originalColumns));
         }
 
         [Fact]
@@ -87,7 +87,7 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
 
             Assert.Collection(result, x => Assert.Equal("table1", x));
             db.Verify(x => x.Query("ListTables"), Times.Once);
-            api.MockCmd.Verify(x => x.ListTables(), Times.Once);
+            api.MockCmd.Verify(x => x.ListTables());
         }
 
         [Fact]
@@ -105,7 +105,7 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
 
             Assert.True(result);
             db.Verify(x => x.Query("IsExistTable"), Times.Once);
-            api.MockCmd.Verify(x => x.IsExistTable("table1"), Times.Once);
+            api.MockCmd.Verify(x => x.IsExistTable("table1"));
         }
 
         [Fact]
@@ -227,12 +227,12 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
                     });
             });
 
-            api.MockCmd.Verify(x => x.DbTypeToControlType("text"), Times.Once);
-            api.MockCmd.Verify(x => x.DbTypeToDataType("text"), Times.Once);
-            api.MockCmd.Verify(x => x.DbTypeToControlType("int"), Times.Once);
-            api.MockCmd.Verify(x => x.DbTypeToDataType("int"), Times.Once);
-            api.MockCmd.Verify(x => x.DbTypeToControlType("varchar"), Times.Once);
-            api.MockCmd.Verify(x => x.DbTypeToDataType("varchar"), Times.Once);
+            api.MockCmd.Verify(x => x.DbTypeToControlType("text"));
+            api.MockCmd.Verify(x => x.DbTypeToDataType("text"));
+            api.MockCmd.Verify(x => x.DbTypeToControlType("int"));
+            api.MockCmd.Verify(x => x.DbTypeToDataType("int"));
+            api.MockCmd.Verify(x => x.DbTypeToControlType("varchar"));
+            api.MockCmd.Verify(x => x.DbTypeToDataType("varchar"));
 
             store.Verify(x => x.AddOrUpdateSchema("table1", result["table1"]), Times.Once);
         }
@@ -288,8 +288,8 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
                     });
             });
 
-            api.MockCmd.Verify(x => x.DbTypeToControlType("varchar"), Times.Once);
-            api.MockCmd.Verify(x => x.DbTypeToDataType("varchar"), Times.Once);
+            api.MockCmd.Verify(x => x.DbTypeToControlType("varchar"));
+            api.MockCmd.Verify(x => x.DbTypeToDataType("varchar"));
 
             Func<List<DbTableColumn>, bool> storeVerify = cs =>
             {
@@ -321,11 +321,6 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
 
         class RelationalDatabaseApiMock : RelationalDatabaseApi<RelationalDatabaseCommandMock>
         {
-            public RelationalDatabaseApiMock()
-            {
-                Cmd = new RelationalDatabaseCommandMock();
-            }
-
             public Mock<IRelationalDatabaseRawCommands> MockCmd => Cmd.MockCmd;
             public override string DbType { get; }
             public override bool RequireSite { get; }
