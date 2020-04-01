@@ -7,16 +7,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Data.SqlClient" Version="4.8.1" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="..\SqlEx.Module\SqlEx.Module.csproj" />
   </ItemGroup>
 
   <ItemGroup>
     <Reference Include="Kooboo.Api">
       <HintPath>..\Kooboo\Kooboo.Api.dll</HintPath>
+    </Reference>
+    <Reference Include="Kooboo.App">
+      <HintPath>..\Kooboo\Kooboo.App.dll</HintPath>
     </Reference>
     <Reference Include="Kooboo.Data">
       <HintPath>..\Kooboo\Kooboo.Data.dll</HintPath>
@@ -50,8 +49,8 @@
     </Reference>
   </ItemGroup>
 
-  <Target Name="generateLinuxZip" AfterTargets="Publish">
-    <Exec Command="$(SolutionDir)tools\moduleZip.bat $(ProjectDir) SqlEx.Module $(SolutionDir)"></Exec>
+  <Target Name="generateZip" AfterTargets="Publish">
+    <Exec Command="(dotnet script -h || dotnet tool install -g dotnet-script) | (dotnet script &quot;$(ProjectDir)\..\tools\pack.csx&quot;)"></Exec>
   </Target>
 
 </Project>
