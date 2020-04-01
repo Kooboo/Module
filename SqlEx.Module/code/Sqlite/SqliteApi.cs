@@ -18,7 +18,7 @@ namespace SqlEx.Module.code.Sqlite
     {
         private static readonly Regex ColumnNameRegex = new Regex("\"(.+?)\"", RegexOptions.Compiled);
 
-        public override string ModelName => "Sqlite";
+        public override string DbType => "Sqlite";
 
         public override bool RequireSite => true;
 

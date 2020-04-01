@@ -16,7 +16,7 @@ namespace SqlEx.Module.code.MySql
 {
     public class MySqlApi : RelationalDatabaseApi<MySqlCommands>
     {
-        public override string ModelName => "MySql";
+        public override string DbType => "MySql";
 
         public override bool RequireSite => true;
 

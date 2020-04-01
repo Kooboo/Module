@@ -15,7 +15,7 @@ namespace SqlEx.Module.code.SqlServer
 {
     public class SqlServerApi : RelationalDatabaseApi<SqlServerCommands>
     {
-        public override string ModelName => "SqlServer";
+        public override string DbType => "SqlServer";
 
         public override bool RequireSite => true;
 

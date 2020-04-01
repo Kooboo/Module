@@ -1,13 +1,13 @@
-using System;
-using System.Collections.Generic;
 using Kooboo.Api;
 using Kooboo.Sites.Models;
 using Kooboo.Web.ViewModel;
+using System.Collections.Generic;
 
 namespace SqlEx.Module.code.RelationalDatabase
 {
     public interface IRelationalDatabaseApi : IApi
     {
+        string DbType { get; }
         List<string> Tables(ApiCall call);
         void CreateTable(string name, ApiCall call);
         void DeleteTables(string names, ApiCall call);

@@ -20,7 +20,9 @@ namespace SqlEx.Module.code.RelationalDatabase
         protected const string DefaultIdFieldName = Kooboo.IndexedDB.Dynamic.Constants.DefaultIdFieldName;
         protected static readonly TCommands Cmd = Activator.CreateInstance<TCommands>();
 
-        public abstract string ModelName { get; }
+        public abstract string DbType { get; }
+
+        public virtual string ModelName => DbType;
 
         public abstract bool RequireSite { get; }
 
@@ -360,7 +362,9 @@ namespace SqlEx.Module.code.RelationalDatabase
                     // update
                     var columns = koobooSchema.Select(x => x.Name).ToArray();
                     var newSchema = koobooSchema.ToList();
+                    // remove columns that no longer exists in db
                     newSchema.RemoveAll(x => dbSchema.Items.All(c => c.Name != x.Name));
+                    // new columns added in db
                     var dbNewColumn = dbSchema.Items.Where(x => !columns.Contains(x.Name))
                         .Select(s =>
                             new DbTableColumn
@@ -449,7 +453,7 @@ namespace SqlEx.Module.code.RelationalDatabase
 
         protected virtual ISchemaMappingRepository GetSchemaMappingRepository(ApiCall call)
         {
-            return new SchemaMappingRepository(ModelName, call);
+            return new SchemaMappingRepository(DbType, call);
         }
     }
 }
