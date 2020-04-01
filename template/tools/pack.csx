@@ -36,6 +36,7 @@ foreach (var item in moduleFiles)
     var relativePath = item.Substring(modulePath.Length).Trim(' ', '/', '\\');
     if (relativePath.StartsWith("bin/") || relativePath.StartsWith("bin\\")) continue;
     if (relativePath.StartsWith("obj/") || relativePath.StartsWith("obj\\")) continue;
+    if (relativePath.StartsWith("Properties/") || relativePath.StartsWith("Properties\\")) continue;
     if (exclude.Any(s => item.EndsWith(s))) continue;
     var targetPath = Path.Combine(zipDirPath, relativePath);
     var targetDir = Path.GetDirectoryName(targetPath);
