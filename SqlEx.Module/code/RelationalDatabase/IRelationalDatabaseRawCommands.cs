@@ -14,7 +14,7 @@ namespace SqlEx.Module.code.RelationalDatabase
         string GetTotalCount(string table);
         string GetPagedData(string table, int totalskip, int pageSize, string sortfield);
         string DeleteData(string table, string primaryKey, List<string> ids);
-        string IsExistTable(string table);
+        string IsExistTable(string table, out object param);
         string DbTypeToDataType(string type);
         string DbTypeToControlType(string type);
         List<DbTableColumn> GetDefaultColumns();

@@ -1,13 +1,15 @@
-﻿using Kooboo.Sites.Models;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
+using Kooboo.Sites.Models;
 using Kooboo.Sites.Scripting.Interfaces;
 using Kooboo.Web.ViewModel;
 using KScript;
 using Moq;
 using SqlEx.Module.code.MySql;
 using SqlEx.Module.code.RelationalDatabase;
-using System;
-using System.Collections.Generic;
-using System.Data;
 using Xunit;
 
 namespace SqlEx.Module.Tests.MySql
@@ -45,7 +47,11 @@ namespace SqlEx.Module.Tests.MySql
         [Fact]
         public void IsExistTable_Should_Sent_Commnad_Text_Correct()
         {
+            var parameter = new Mock<IDbDataParameter>();
+            var parameters = new Mock<IDataParameterCollection>();
             var cmd = new Mock<IDbCommand>();
+            cmd.SetupGet(x => x.Parameters).Returns(parameters.Object);
+            cmd.Setup(x => x.CreateParameter()).Returns(parameter.Object);
             var conn = new Mock<IDbConnection>();
             conn.SetupGet(x => x.Database).Returns("kooboo");
             conn.Setup(x => x.CreateCommand()).Returns(cmd.Object);
@@ -55,10 +61,11 @@ namespace SqlEx.Module.Tests.MySql
             db.SetupGet(x => x.SqlExecuter).Returns(executer.Object);
             var mysql = new MySqlApiMock();
 
-            var b = mysql.IsExistTable(db.Object, "table");
+            var b = mysql.IsExistTable(db.Object, "table1");
 
-            Assert.False(b);
-            cmd.VerifySet(x => x.CommandText = "SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE TABLE_SCHEMA='kooboo' AND TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'table');", Times.Once());
+            cmd.VerifySet(x => x.CommandText = "SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE TABLE_SCHEMA='kooboo' AND TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = @table);", Times.Once());
+            parameter.VerifySet(x => x.Value = "table1");
+            parameter.VerifySet(x => x.ParameterName = "table");
         }
 
         [Fact]

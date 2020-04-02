@@ -31,9 +31,9 @@ namespace SqlEx.Module.code.MySql
         {
             using (var conn = db.SqlExecuter.CreateConnection())
             {
-                var cmd = Cmd.IsExistTable(name);
+                var cmd = Cmd.IsExistTable(name, out var param);
                 var dbName = conn.Database;
-                var exists = conn.ExecuteScalar<bool>(string.Format(cmd, dbName));
+                var exists = conn.ExecuteScalar<bool>(string.Format(cmd, dbName), param);
                 return exists;
             }
         }
