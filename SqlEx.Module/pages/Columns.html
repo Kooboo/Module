@@ -470,8 +470,7 @@
             );
           } else {
             return koobooModule.recombineUrl(
-              koobooModule.getModuleRootPath() +
-                `/${vm.sqlType.toLowerCase()}.html`,
+              koobooModule.getModuleRootPath() + `/index.html`,
               { SiteId: this.siteId, sqlType: vm.sqlType }
             );
           }
