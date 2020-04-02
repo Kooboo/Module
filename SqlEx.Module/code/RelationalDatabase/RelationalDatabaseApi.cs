@@ -37,10 +37,7 @@ namespace SqlEx.Module.code.RelationalDatabase
 
         public void CreateTable(string name, ApiCall call)
         {
-            if (!Kooboo.IndexedDB.Helper.CharHelper.IsValidTableName(name))
-            {
-                throw new Exception(Kooboo.Data.Language.Hardcoded.GetValue("Only Alphanumeric are allowed to use as a table", call.Context));
-            }
+            CheckTableName(name, call);
 
             var db = GetDatabase(call);
 
@@ -64,6 +61,7 @@ namespace SqlEx.Module.code.RelationalDatabase
 
         public bool IsUniqueTableName(string name, ApiCall call)
         {
+            CheckTableName(name, call);
             var db = GetDatabase(call);
             return !IsExistTable(db, name);
         }
@@ -452,6 +450,14 @@ namespace SqlEx.Module.code.RelationalDatabase
         protected virtual ISchemaMappingRepository GetSchemaMappingRepository(ApiCall call)
         {
             return new SchemaMappingRepository(DbType, call);
+        }
+
+        private void CheckTableName(string name, ApiCall call)
+        {
+            if (!Kooboo.IndexedDB.Helper.CharHelper.IsValidTableName(name))
+            {
+                throw new Exception(Kooboo.Data.Language.Hardcoded.GetValue("Only Alphanumeric are allowed to use as a table", call.Context));
+            }
         }
     }
 }
