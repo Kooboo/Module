@@ -218,6 +218,13 @@
           }
         },
         getTableList() {
+          var failBak;
+          
+          if (window.info) {
+            failBak = window.info.fail;
+            window.info.fail = function() {};
+          }
+         
           koobooModule[vm.sqlType + "Model"].Tables().then(function(res) {
             if (res.success) {
               vm.tableData = res.model;
@@ -226,6 +233,7 @@
               vm.connectError = true;
               vm.connectErrorMsgs = res.messages;
             }
+            if(failBak) window.info.fail = failBak;
           });
         },
         createTableHandle() {
