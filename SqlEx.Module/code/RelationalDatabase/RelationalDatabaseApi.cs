@@ -1,6 +1,9 @@
 //Copyright (c) 2018 Yardi Technology Limited. Http://www.kooboo.com 
 //All rights reserved.
 
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Kooboo.Api;
 using Kooboo.Lib.Helper;
 using Kooboo.Sites.Models;
@@ -8,9 +11,6 @@ using Kooboo.Sites.Scripting.Interfaces;
 using Kooboo.Web.ViewModel;
 using KScript;
 using SqlEx.Module.code.RelationalDatabase.SchemaStore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace SqlEx.Module.code.RelationalDatabase
 {
@@ -37,7 +37,10 @@ namespace SqlEx.Module.code.RelationalDatabase
 
         public void CreateTable(string name, ApiCall call)
         {
-            CheckTableName(name, call);
+            if (!Kooboo.IndexedDB.Helper.CharHelper.IsValidTableName(name))
+            {
+                throw new Exception(Kooboo.Data.Language.Hardcoded.GetValue("Only Alphanumeric are allowed to use as a table", call.Context));
+            }
 
             var db = GetDatabase(call);
 
@@ -61,7 +64,6 @@ namespace SqlEx.Module.code.RelationalDatabase
 
         public bool IsUniqueTableName(string name, ApiCall call)
         {
-            CheckTableName(name, call);
             var db = GetDatabase(call);
             return !IsExistTable(db, name);
         }
@@ -309,7 +311,7 @@ namespace SqlEx.Module.code.RelationalDatabase
 
         protected virtual bool IsExistTable(IRelationalDatabase db, string name)
         {
-            var exist = db.Query(Cmd.IsExistTable(name));
+            var exist = db.Query(Cmd.IsExistTable(name, out var param), param);
             return exist.Any(x => x.Values.Count > 0);
         }
 
@@ -450,14 +452,6 @@ namespace SqlEx.Module.code.RelationalDatabase
         protected virtual ISchemaMappingRepository GetSchemaMappingRepository(ApiCall call)
         {
             return new SchemaMappingRepository(DbType, call);
-        }
-
-        private void CheckTableName(string name, ApiCall call)
-        {
-            if (!Kooboo.IndexedDB.Helper.CharHelper.IsValidTableName(name))
-            {
-                throw new Exception(Kooboo.Data.Language.Hardcoded.GetValue("Only Alphanumeric are allowed to use as a table", call.Context));
-            }
         }
     }
 }

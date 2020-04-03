@@ -50,9 +50,9 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
                    ?? $"DeleteData_{table}_{primaryKey}_{string.Join(",", ids)}";
         }
 
-        public string IsExistTable(string table)
+        public string IsExistTable(string table, out object param)
         {
-            return cmd.IsExistTable(table) ?? "IsExistTable";
+            return cmd.IsExistTable(table, out param) ?? "IsExistTable";
         }
 
         public string DbTypeToDataType(string type)

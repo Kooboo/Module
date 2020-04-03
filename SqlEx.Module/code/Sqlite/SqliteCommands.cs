@@ -17,9 +17,10 @@ namespace SqlEx.Module.code.Sqlite
             return "SELECT name FROM sqlite_master WHERE type='table';";
         }
 
-        public override string IsExistTable(string table)
+        public override string IsExistTable(string table, out object param)
         {
-            return $"SELECT name FROM sqlite_master WHERE type='table' and name='{table}' LIMIT 1";
+            param = new { table };
+            return $"SELECT name FROM sqlite_master WHERE type='table' and name=@table LIMIT 1";
         }
 
         public override string DbTypeToDataType(string type)

@@ -18,9 +18,10 @@ namespace SqlEx.Module.code.SqlServer
             return "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE';";
         }
 
-        public override string IsExistTable(string table)
+        public override string IsExistTable(string table, out object param)
         {
-            return "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = '" + table + "';";
+            param = new { table };
+            return "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = @table;";
         }
 
         public override string DbTypeToDataType(string type)

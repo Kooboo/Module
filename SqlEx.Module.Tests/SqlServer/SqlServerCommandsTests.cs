@@ -1,4 +1,5 @@
 ﻿using Kooboo.Sites.Models;
+using Newtonsoft.Json;
 using SqlEx.Module.code.SqlServer;
 using System.Collections.Generic;
 using Xunit;
@@ -31,9 +32,10 @@ namespace SqlEx.Module.Tests.SqlServer
         {
             var cmd = new SqlServerCommands();
 
-            var result = cmd.IsExistTable("table1");
+            var result = cmd.IsExistTable("table1", out var param);
 
-            Assert.Equal("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = 'table1';", result);
+            Assert.Equal("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = @table;", result);
+            Assert.Equal("{\"table\":\"table1\"}", JsonConvert.SerializeObject(param));
         }
 
         [Theory]

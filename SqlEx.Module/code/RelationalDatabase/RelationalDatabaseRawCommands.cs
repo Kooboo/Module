@@ -1,8 +1,7 @@
-﻿using Kooboo.Sites.Models;
-using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Kooboo.Sites.Models;
 
 namespace SqlEx.Module.code.RelationalDatabase
 {
@@ -14,7 +13,7 @@ namespace SqlEx.Module.code.RelationalDatabase
 
         public abstract string ListTables();
 
-        public abstract string IsExistTable(string table);
+        public abstract string IsExistTable(string table, out object param);
 
         public virtual string DeleteTables(string[] tables)
         {

@@ -98,14 +98,15 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
             var obj = new Mock<IDynamicTableObject>();
             obj.SetupGet(x => x.Values).Returns(
                 new Dictionary<string, object> { { "col", "table1" } });
-            db.Setup(x => x.Query(It.IsAny<string>()))
+            db.Setup(x => x.Query(It.IsAny<string>(), It.IsAny<object>()))
                 .Returns(new[] { obj.Object });
 
             var result = api.IsExistTable(db.Object, "table1");
 
             Assert.True(result);
-            db.Verify(x => x.Query("IsExistTable"), Times.Once);
-            api.MockCmd.Verify(x => x.IsExistTable("table1"));
+            db.Verify(x => x.Query("IsExistTable", null), Times.Once);
+            object param = null;
+            api.MockCmd.Verify(x => x.IsExistTable("table1", out param));
         }
 
         [Fact]

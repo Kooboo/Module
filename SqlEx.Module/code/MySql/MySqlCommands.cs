@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Text.RegularExpressions;
 using Kooboo.Sites.Models;
 using SqlEx.Module.code.RelationalDatabase;
 
@@ -18,9 +17,10 @@ namespace SqlEx.Module.code.MySql
             return "SELECT TABLE_NAME FROM information_schema.tables WHERE TABLE_SCHEMA='{0}' AND TABLE_TYPE = 'BASE TABLE';";
         }
 
-        public override string IsExistTable(string table)
+        public override string IsExistTable(string table, out object param)
         {
-            return "SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE TABLE_SCHEMA='{0}' AND TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = '" + table + "');";
+            param = new { table };
+            return "SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE TABLE_SCHEMA='{0}' AND TABLE_TYPE = 'BASE TABLE' AND TABLE_NAME = @table);";
         }
 
         public override string DbTypeToDataType(string type)

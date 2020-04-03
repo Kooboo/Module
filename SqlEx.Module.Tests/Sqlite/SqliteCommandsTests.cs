@@ -1,7 +1,8 @@
-﻿using Kooboo.Sites.Models;
-using SqlEx.Module.code.Sqlite;
-using System;
+﻿using System;
 using System.Collections.Generic;
+using Kooboo.Sites.Models;
+using Newtonsoft.Json;
+using SqlEx.Module.code.Sqlite;
 using Xunit;
 
 namespace SqlEx.Module.Tests.Sqlite
@@ -32,9 +33,10 @@ namespace SqlEx.Module.Tests.Sqlite
         {
             var cmd = new SqliteCommands();
 
-            var result = cmd.IsExistTable("table1");
+            var result = cmd.IsExistTable("table1", out var param);
 
-            Assert.Equal("SELECT name FROM sqlite_master WHERE type='table' and name='table1' LIMIT 1", result);
+            Assert.Equal("SELECT name FROM sqlite_master WHERE type='table' and name=@table LIMIT 1", result);
+            Assert.Equal("{\"table\":\"table1\"}", JsonConvert.SerializeObject(param));
         }
 
         [Theory]
