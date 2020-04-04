@@ -48,5 +48,44 @@ namespace SqlEx.Module.code.SqlServer
                         .Select(kv => new DataValue { key = kv.Key, value = kv.Value }).ToList())
                 .ToList();
         }
+
+        internal override string[] GetIndexColumns(IRelationalDatabase db, string table)
+        {
+            return db.Query($"EXEC Sp_helpindex [{table}]").Select(s => s.obj["index_keys"]).Cast<string>().SelectMany(s => s.Split(',')).ToArray();
+        }
+
+        internal override void UpdateIndex(IRelationalDatabase db, string tablename, List<DbTableColumn> columns)
+        {
+            var cols = columns.Where(w => w.IsIndex).Select(s => s.Name);
+            var tableIndexs = db.Query($"EXEC Sp_helpindex [{tablename}]");
+
+            var removed = tableIndexs.Where(w =>
+            {
+                var keys = w.obj["index_keys"].ToString().Split(',');
+                return keys.Any(a => !cols.Contains(a));
+            });
+
+            foreach (var item in removed)
+            {
+                try
+                {
+                    db.Execute($"DROP INDEX [{item.obj["index_name"]}] ON [{tablename}]");
+                }
+                catch (Exception)
+                {
+                }
+            }
+
+            foreach (var item in cols)
+            {
+                try
+                {
+                    db.GetTable(tablename).createIndex(item);
+                }
+                catch (Exception)
+                {
+                }
+            }
+        }
     }
 }

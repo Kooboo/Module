@@ -59,10 +59,10 @@ namespace SqlEx.Module.code.Sqlite
                 {
                     sb.AppendLine(GetCreateTableSql(tablename, sql.Sql, columns));
                 }
-                else if (sql.Type == "index")
-                {
-                    sb.AppendLine(GetCreateIndexSql(sql.Sql, columns));
-                }
+                //else if (sql.Type == "index")
+                //{
+                //    sb.AppendLine(GetCreateIndexSql(sql.Sql, columns));
+                //}
             }
 
             // copy data
@@ -77,6 +77,11 @@ namespace SqlEx.Module.code.Sqlite
             sb.AppendLine($"DROP TABLE {oldTable};");
 
             db.Execute(sb.ToString());
+
+            foreach (var item in columns.Where(w => w.IsIndex))
+            {
+                db.GetTable(tablename).createIndex(item.Name);
+            }
         }
 
         private string GetCreateIndexSql(string oldCreateIndexSql, List<DbTableColumn> newColumns)
@@ -217,6 +222,26 @@ namespace SqlEx.Module.code.Sqlite
             }
 
             return $"\"{column.Name}\" {dataType},";
+        }
+
+        internal override string[] GetIndexColumns(IRelationalDatabase db, string table)
+        {
+            var columns = new List<string>();
+            var indexs = db.Query($"SELECT name from pragma_index_list('{table}')").Select(s => s.obj["name"]);
+
+            foreach (var item in indexs)
+            {
+                var cols = db.Query($"SELECT name from pragma_index_info('{item}')").Select(s => s.obj["name"]).Cast<string>();
+                columns.AddRange(cols);
+            }
+
+            return columns.ToArray();
+        }
+
+        internal override void UpdateIndex(IRelationalDatabase db, string tablename, List<DbTableColumn> columns)
+        {
+            // not need implement
+            throw new NotImplementedException();
         }
     }
 }

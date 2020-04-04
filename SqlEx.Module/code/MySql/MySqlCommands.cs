@@ -143,6 +143,7 @@ namespace SqlEx.Module.code.MySql
         {
             var sb = new StringBuilder();
             sb.AppendLine($"ALTER TABLE {Quote(table)}");
+            var startLength = sb.Length;
 
             // add column
             foreach (var column in columns)
@@ -166,6 +167,7 @@ namespace SqlEx.Module.code.MySql
                 sb.AppendLine($"DROP COLUMN {Quote(column.Name)},");
             }
 
+            if (sb.Length == startLength) return string.Empty;
             sb.Remove(sb.Length - Environment.NewLine.Length - 1, Environment.NewLine.Length + 1);
             sb.AppendLine(";");
             return sb.ToString();
@@ -193,5 +195,6 @@ namespace SqlEx.Module.code.MySql
 
             return $"{Quote(column.Name)} {dataType}";
         }
+
     }
 }

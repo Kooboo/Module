@@ -65,5 +65,6 @@ namespace SqlEx.Module.code.RelationalDatabase
         {
             return Regex.Replace(dataType?.ToLower() ?? "", @"\(.+\)", "");
         }
+
     }
 }

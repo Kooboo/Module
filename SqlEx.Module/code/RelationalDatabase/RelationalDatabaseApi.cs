@@ -296,9 +296,12 @@ namespace SqlEx.Module.code.RelationalDatabase
 
         protected virtual void UpdateTable(IRelationalDatabase db, string tablename, List<DbTableColumn> columns, List<DbTableColumn> originalColumns)
         {
-            db.Execute(Cmd.UpdateTable(tablename, originalColumns, columns));
+            var sql = Cmd.UpdateTable(tablename, originalColumns, columns);
+            if (!string.IsNullOrWhiteSpace(sql)) db.Execute(sql);
+            UpdateIndex(db, tablename, columns);
         }
 
+        internal abstract void UpdateIndex(IRelationalDatabase db, string tablename, List<DbTableColumn> columns);
         protected abstract IRelationalDatabase GetDatabase(ApiCall call);
 
         protected abstract Type GetClrType(DatabaseItemEdit column);
@@ -338,6 +341,7 @@ namespace SqlEx.Module.code.RelationalDatabase
             {
                 var dbSchema = db.SqlExecuter.GetSchema(table);
                 koobooSchemas.TryGetValue(table, out var koobooSchema);
+                string[] indexColumns = GetIndexColumns(db, table).Select(s => s.Trim()).ToArray();
                 if (koobooSchema == null)
                 {
                     // add
@@ -345,7 +349,7 @@ namespace SqlEx.Module.code.RelationalDatabase
                     {
                         IsSystem = s.Name == DefaultIdFieldName,
                         IsUnique = s.Name == DefaultIdFieldName,
-                        IsIndex = s.Name == DefaultIdFieldName,
+                        IsIndex = indexColumns.Contains(s.Name),
                         Name = s.Name,
                         DataType = Cmd.DbTypeToDataType(s.Type),
                         IsPrimaryKey = s.IsPrimaryKey,
@@ -359,7 +363,13 @@ namespace SqlEx.Module.code.RelationalDatabase
                 {
                     // update
                     var columns = koobooSchema.Select(x => x.Name).ToArray();
-                    var newSchema = koobooSchema.ToList();
+                    var newSchema = JsonHelper.Deserialize<List<DbTableColumn>>(JsonHelper.Serialize(koobooSchema));
+
+                    foreach (var item in newSchema)
+                    {
+                        item.IsIndex = indexColumns.Contains(item.Name);
+                    }
+
                     // remove columns that no longer exists in db
                     newSchema.RemoveAll(x => dbSchema.Items.All(c => c.Name != x.Name));
                     // new columns added in db
@@ -369,7 +379,7 @@ namespace SqlEx.Module.code.RelationalDatabase
                             {
                                 IsSystem = s.Name == DefaultIdFieldName,
                                 IsUnique = s.Name == DefaultIdFieldName,
-                                IsIndex = s.Name == DefaultIdFieldName,
+                                IsIndex = indexColumns.Contains(s.Name),
                                 Name = s.Name,
                                 DataType = Cmd.DbTypeToDataType(s.Type),
                                 IsPrimaryKey = s.IsPrimaryKey,
@@ -391,6 +401,8 @@ namespace SqlEx.Module.code.RelationalDatabase
 
             return newCloumnFromDb;
         }
+
+        internal abstract string[] GetIndexColumns(IRelationalDatabase db, string table);
 
         private List<DatabaseItemEdit> GetAllColumnsForItemEdit(ISchemaMappingRepository schemaRepository, string table)
         {
@@ -442,10 +454,12 @@ namespace SqlEx.Module.code.RelationalDatabase
                     return;
                 }
 
-                if (oriCol.ControlType != newCol.ControlType || oriCol.Setting != newCol.Setting)
+                if (oriCol.ControlType != newCol.ControlType || oriCol.Setting != newCol.Setting || oriCol.IsIndex != newCol.IsIndex)
                 {
                     shouldUpdateSchema = true;
                 }
+
+                if (oriCol.IsIndex != newCol.IsIndex) shouldUpdateTable = true;
             }
         }
 

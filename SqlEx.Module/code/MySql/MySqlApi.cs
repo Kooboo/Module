@@ -82,5 +82,46 @@ namespace SqlEx.Module.code.MySql
                     return typeof(string);
             }
         }
+
+        internal override string[] GetIndexColumns(IRelationalDatabase db, string table)
+        {
+            return db.Query($"show index from `{table}`").Select(s => s.obj["Column_name"]).Cast<string>().ToArray();
+        }
+
+        internal override void UpdateIndex(IRelationalDatabase db, string tablename, List<DbTableColumn> columns)
+        {
+            var cols = columns.Where(w => w.IsIndex).Select(s => s.Name);
+            var tableIndexs = db.Query($"show index from `{tablename}`");
+            var removed = tableIndexs.Where(w => !cols.Contains(w.obj["Column_name"]));
+
+            foreach (var item in removed)
+            {
+                try
+                {
+                    db.Execute($"DROP INDEX `{item.obj["Key_name"]}` ON `{tablename}`");
+                }
+                catch (Exception)
+                {
+                }
+            }
+
+            foreach (var item in cols)
+            {
+                try
+                {
+                    db.GetTable(tablename).createIndex(item);
+                }
+                catch (Exception)
+                {
+                    try
+                    {
+                        db.Execute($"create fulltext index `{item}` on `{tablename}`(`{item}`)");
+                    }
+                    catch (Exception)
+                    {
+                    }
+                }
+            }
+        }
     }
 }
