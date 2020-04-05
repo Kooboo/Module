@@ -14,7 +14,7 @@
               <p class="text-danger">
                 {{Kooboo.text["sqlex.module"]["connectfailed"]}}
               </p>
-              <footer style="cursor: pointer" @click="redictToSystem">
+              <footer style="cursor: pointer;" @click="redictToSystem">
                 {{Kooboo.text["sqlex.module"][ sqlType.toLowerCase()+
                 "ConfigTips"]}}
               </footer>
@@ -102,15 +102,15 @@
 
 <script src="pages/js/main.js"></script>
 <script>
-  (function() {
+  (function () {
     Kooboo.loadJS([
       "/_Admin/Scripts/components/kbBreadcrumb.js",
       "/_Admin/Scripts/components/kbTable.js",
-      "/_Admin/Scripts/components/kbForm.js"
+      "/_Admin/Scripts/components/kbForm.js",
     ]);
     new Vue({
       el: "#app",
-      data: function() {
+      data: function () {
         vm = this;
         var sqlType = Kooboo.getQueryString("sqlType");
         var title =
@@ -118,14 +118,14 @@
         return {
           breads: [
             {
-              name: "SITES"
+              name: "SITES",
             },
             {
-              name: "DASHBOARD"
+              name: "DASHBOARD",
             },
             {
-              name: title
-            }
+              name: title,
+            },
           ],
           title: title,
           sqlType: sqlType,
@@ -136,7 +136,7 @@
           showCreateTableModal: false,
           siteId: Kooboo.getQueryString("SiteId"),
           createTableModel: {
-            name: ""
+            name: "",
           },
           createTableModelRules: {
             name: [
@@ -144,7 +144,7 @@
               {
                 min: 1,
                 max: 64,
-                message: Kooboo.text.validation.maxLength + " 64"
+                message: Kooboo.text.validation.maxLength + " 64",
               },
               {
                 remote: {
@@ -152,19 +152,19 @@
                     `/_api/${sqlType}/IsUniqueTableName`,
                     { SiteId: Kooboo.getQueryString("SiteId") }
                   ),
-                  data: function() {
+                  data: function () {
                     return {
-                      name: vm.createTableModel.name
+                      name: vm.createTableModel.name,
                     };
-                  }
+                  },
                 },
-                message: Kooboo.text.validation.taken
-              }
-            ]
-          }
+                message: Kooboo.text.validation.taken,
+              },
+            ],
+          },
         };
       },
-      mounted: function() {
+      mounted: function () {
         vm.getTableList();
       },
       methods: {
@@ -180,9 +180,9 @@
             if (vm.selectedRows.length > 0) {
               koobooModule[vm.sqlType + "Model"]
                 .DeleteTables({
-                  names: vm.selectedRows
+                  names: vm.selectedRows,
                 })
-                .then(function(res) {
+                .then(function (res) {
                   if (res.success) {
                     window.info.done(Kooboo.text.info.delete.success);
                     vm.getTableList();
@@ -207,9 +207,9 @@
           if (vm.$refs.createTableForm.validate()) {
             koobooModule[vm.sqlType + "Model"]
               .CreateTable({
-                name: vm.createTableModel.name
+                name: vm.createTableModel.name,
               })
-              .then(function(res) {
+              .then(function (res) {
                 if (res.success) {
                   vm.getTableList();
                   vm.closeCreateTableHandle();
@@ -218,22 +218,18 @@
           }
         },
         getTableList() {
-          var failBak;
-          
-          if (window.info) {
-            failBak = window.info.fail;
-            window.info.fail = function() {};
-          }
-         
-          koobooModule[vm.sqlType + "Model"].Tables().then(function(res) {
+          koobooModule[vm.sqlType + "Model"].Tables().then(function (res) {
             if (res.success) {
               vm.tableData = res.model;
               vm.connectError = false;
             } else {
-              vm.connectError = true;
-              vm.connectErrorMsgs = res.messages;
+              if (res.messages[0].indexOf("->") > -1) {
+                vm.connectError = true;
+                vm.connectErrorMsgs = res.messages;
+              } else {
+                window.info.fail(res.messages);
+              }
             }
-            if(failBak) window.info.fail = failBak;
           });
         },
         createTableHandle() {
@@ -245,8 +241,8 @@
         },
         revertCreateTableState() {
           vm.createTableModel.name = "";
-        }
-      }
+        },
+      },
     });
   })();
 </script>
