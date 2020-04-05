@@ -189,7 +189,7 @@ namespace SqlEx.Module.code.MySql
                     break;
                 case "string":
                 default:
-                    dataType = "text";
+                    dataType = "varchar(1024)";
                     break;
             }
 

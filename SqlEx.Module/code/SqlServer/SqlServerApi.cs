@@ -80,6 +80,7 @@ namespace SqlEx.Module.code.SqlServer
             {
                 try
                 {
+                    if (tableIndexs.Any(a => a.obj["index_keys"].ToString().Split(',').All(aa => aa == item))) continue;
                     db.GetTable(tablename).createIndex(item);
                 }
                 catch (Exception)

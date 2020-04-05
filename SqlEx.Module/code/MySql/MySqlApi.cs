@@ -115,6 +115,8 @@ namespace SqlEx.Module.code.MySql
                 {
                     try
                     {
+
+                        if (tableIndexs.Any(a => a.obj["Column_name"].ToString() == item)) continue;
                         db.Execute($"create fulltext index `{item}` on `{tablename}`(`{item}`)");
                     }
                     catch (Exception)

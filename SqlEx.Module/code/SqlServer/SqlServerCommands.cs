@@ -184,7 +184,7 @@ namespace SqlEx.Module.code.SqlServer
                     break;
             }
 
-            var length = dataType != "nvarchar" ? "" : "(max)";
+            var length = dataType != "nvarchar" ? "" : "(1024)";
             return $"{Quote(column.Name)} {dataType}{length}";
         }
     }
