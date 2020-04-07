@@ -43,46 +43,46 @@ namespace SqlEx.Module.Tests.Sqlite
             Assert.False(sqlite.RequireUser);
         }
 
-        [Fact]
-        public void UpdateTable_Should_Throw_Exception_When_Remove_Column_Has_Index()
-        {
-            var db = new Mock<IRelationalDatabase>();
-            var sqls = new[]
-                {
-                    new { type = "table", name = "table1", sql = @"CREATE TABLE ""vb"" (
-                        ""c1"" TEXT,
-                        ""c2"" TEXT
-                        )" },
-                    new { type = "index", name = "idx_uniq_c2", sql = @"CREATE UNIQUE INDEX ""idx_uniq_c2""
-                            ON ""vb"" (
-                            ""c2""
-                            )" },
-                }
-                .Select(x =>
-                {
-                    var obj = new Mock<IDynamicTableObject>();
-                    obj.SetupGet(o => o.Values)
-                        .Returns(new Dictionary<string, object>
-                        { { "type", x.type }, { "name", x.name }, { "sql", x.sql } });
-                    return obj.Object;
-                })
-                .ToArray();
-            db.Setup(x => x.Query(It.IsAny<string>())).Returns(sqls);
-            var columns = new List<DbTableColumn>
-            {
-                new DbTableColumn { Name = "c1", DataType = "string"},
-            };
-            var originalColumns = new List<DbTableColumn>
-            {
-                new DbTableColumn { Name = "c1", DataType = "string"},
-                new DbTableColumn { Name = "c2", DataType = "string"},
-            };
-            var sqlite = new SqliteApiMock();
+        //[Fact]
+        //public void UpdateTable_Should_Throw_Exception_When_Remove_Column_Has_Index()
+        //{
+        //    var db = new Mock<IRelationalDatabase>();
+        //    var sqls = new[]
+        //        {
+        //            new { type = "table", name = "table1", sql = @"CREATE TABLE ""vb"" (
+        //                ""c1"" TEXT,
+        //                ""c2"" TEXT
+        //                )" },
+        //            new { type = "index", name = "idx_uniq_c2", sql = @"CREATE UNIQUE INDEX ""idx_uniq_c2""
+        //                    ON ""vb"" (
+        //                    ""c2""
+        //                    )" },
+        //        }
+        //        .Select(x =>
+        //        {
+        //            var obj = new Mock<IDynamicTableObject>();
+        //            obj.SetupGet(o => o.Values)
+        //                .Returns(new Dictionary<string, object>
+        //                { { "type", x.type }, { "name", x.name }, { "sql", x.sql } });
+        //            return obj.Object;
+        //        })
+        //        .ToArray();
+        //    db.Setup(x => x.Query(It.IsAny<string>())).Returns(sqls);
+        //    var columns = new List<DbTableColumn>
+        //    {
+        //        new DbTableColumn { Name = "c1", DataType = "string"},
+        //    };
+        //    var originalColumns = new List<DbTableColumn>
+        //    {
+        //        new DbTableColumn { Name = "c1", DataType = "string"},
+        //        new DbTableColumn { Name = "c2", DataType = "string"},
+        //    };
+        //    var sqlite = new SqliteApiMock();
 
-            var exception = Assert.Throws<Exception>(() => sqlite.UpdateTable(db.Object, "table1", columns, originalColumns));
+        //    var exception = Assert.Throws<Exception>(() => sqlite.UpdateTable(db.Object, "table1", columns, originalColumns));
 
-            Assert.Equal("Cannot remove column that has index, column name: c2", exception.Message);
-        }
+        //    Assert.Equal("Cannot remove column that has index, column name: c2", exception.Message);
+        //}
 
         [Fact]
         public void UpdateTable_Should_Generate_Commnad_Text_Correct()
@@ -119,7 +119,7 @@ namespace SqlEx.Module.Tests.Sqlite
             var columns = new List<DbTableColumn>
             {
                 new DbTableColumn { Name = "id", DataType = "number"},
-                new DbTableColumn { Name = "c1", DataType = "string"},
+                new DbTableColumn { Name = "c1", DataType = "string", IsIndex = true },
                 new DbTableColumn { Name = "c2", DataType = "string"},
                 new DbTableColumn { Name = "c4", DataType = "String"},
                 new DbTableColumn { Name = "c5", DataType = "number"},
@@ -132,6 +132,8 @@ namespace SqlEx.Module.Tests.Sqlite
                 new DbTableColumn { Name = "c2", DataType = "string"},
                 new DbTableColumn { Name = "c3", DataType = "number"},
             };
+            var table = new Mock<ITable>();
+            db.Setup(x => x.GetTable("table1")).Returns(table.Object);
             var sqlite = new SqliteApiMock();
 
             sqlite.UpdateTable(db.Object, "table1", columns, originalColumns);
@@ -143,25 +145,25 @@ namespace SqlEx.Module.Tests.Sqlite
                 s = removeSpace.Replace(s, "");
                 s = standardTableName.Replace(s, "_old_table1_xxxx");
                 Assert.Equal("DROP INDEX idx_c1;" +
-                             "DROP INDEX idx_uniq_c2;" +
-                             "ALTER TABLE table1 RENAME TO _old_table1_xxxx;" +
-                             "CREATE TABLE \"table1\" " +
-                             "(\"id\" integer NOT NULL," +
-                             "\"c1\" TEXT,\"c2\" TEXT," +
-                             "\"c4\" TEXT," +
-                             "\"c5\" REAL," +
-                             "\"c6\" INTEGER," +
-                             "PRIMARY KEY (\"id\")" +
-                             ");" +
-                             "CREATE INDEX \"idx_c1\"ON \"vb\" (\"c1\");" +
-                             "CREATE UNIQUE INDEX \"idx_uniq_c2\"ON \"vb\" (\"c2\");" +
-                             "INSERT INTO table1 (\"id\",\"c1\",\"c2\")" +
-                             " SELECT \"id\",\"c1\",\"c2\" FROM _old_table1_xxxx;" +
-                             "DROP TABLE _old_table1_xxxx;",
+                    "DROP INDEX idx_uniq_c2;" +
+                    "ALTER TABLE table1 RENAME TO _old_table1_xxxx;" +
+                    "CREATE TABLE \"table1\" " +
+                    "(\"id\" integer NOT NULL," +
+                    "\"c1\" TEXT," +
+                    "\"c2\" TEXT," +
+                    "\"c4\" TEXT," +
+                    "\"c5\" REAL," +
+                    "\"c6\" INTEGER," +
+                    "PRIMARY KEY (\"id\")" +
+                    ");" +
+                    "INSERT INTO table1 (\"id\",\"c1\",\"c2\")" +
+                    " SELECT \"id\",\"c1\",\"c2\" FROM _old_table1_xxxx;" +
+                    "DROP TABLE _old_table1_xxxx;",
                     s);
                 return true;
             };
             db.Verify(x => x.Execute(It.Is<string>(sql => verify(sql))), Times.Once);
+            table.Verify(x => x.createIndex("c1"), Times.Once);
         }
 
         [Fact]
@@ -217,6 +219,36 @@ namespace SqlEx.Module.Tests.Sqlite
             var result = sqlite.GetClrType(new DatabaseItemEdit { DataType = dataType });
 
             Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void GetIndexColumns_Should_Return_Cloumns_Correctly()
+        {
+            var api = new SqliteApiMock();
+            var listData1 = new Mock<IDynamicTableObject>();
+            listData1.SetupGet(x => x.obj)
+                .Returns(new Dictionary<string, object> { { "name", "idx1" } });
+            var listData2 = new Mock<IDynamicTableObject>();
+            listData2.SetupGet(x => x.obj)
+                .Returns(new Dictionary<string, object> { { "name", "idx2" } });
+            var idxData1 = new Mock<IDynamicTableObject>();
+            idxData1.SetupGet(x => x.obj)
+                .Returns(new Dictionary<string, object> { { "name", "c1" } });
+            var idxData2 = new Mock<IDynamicTableObject>();
+            idxData2.SetupGet(x => x.obj)
+                .Returns(new Dictionary<string, object> { { "name", "c2" } });
+            var db = new Mock<IRelationalDatabase>();
+            db.SetupSequence(x => x.Query(It.IsAny<string>()))
+                .Returns(new[] { listData1.Object, listData2.Object })
+                .Returns(new[] { idxData1.Object })
+                .Returns(new[] { idxData2.Object });
+
+            var result = api.GetIndexColumns(db.Object, "table1");
+
+            Assert.Collection(result, x => Assert.Equal("c1", x), x => Assert.Equal("c2", x));
+            db.Verify(x => x.Query("SELECT name from pragma_index_list('table1')"), Times.Once);
+            db.Verify(x => x.Query("SELECT name from pragma_index_info('idx1')"), Times.Once);
+            db.Verify(x => x.Query("SELECT name from pragma_index_info('idx2')"), Times.Once);
         }
 
         class SqliteApiMock : SqliteApi

@@ -143,7 +143,7 @@ namespace SqlEx.Module.code.SqlServer
                 {
                     sb.AppendLine($"ALTER TABLE {Quote(table)} ADD {GenerateColumnDefine(column)};");
                 }
-                else if (ori.Length != column.Length)
+                else if (ori.Length != column.Length && column.DataType.ToLower() == "string")
                 {
                     sb.AppendLine($"ALTER TABLE {Quote(table)} ALTER COLUMN {GenerateColumnDefine(column)};");
                 }

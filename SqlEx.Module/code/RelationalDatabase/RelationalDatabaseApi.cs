@@ -11,6 +11,8 @@ using Kooboo.Sites.Scripting.Interfaces;
 using Kooboo.Web.ViewModel;
 using KScript;
 using SqlEx.Module.code.RelationalDatabase.SchemaStore;
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("SqlEx.Module.Tests")]
+[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("DynamicProxyGenAssembly2")]
 
 namespace SqlEx.Module.code.RelationalDatabase
 {

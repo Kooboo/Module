@@ -1,4 +1,5 @@
 ﻿using Kooboo.Sites.Models;
+using Kooboo.Sites.Scripting.Interfaces;
 using Kooboo.Web.ViewModel;
 using KScript;
 using Moq;
@@ -94,6 +95,59 @@ namespace SqlEx.Module.Tests.SqlServer
             var result = sqlServer.GetClrType(new DatabaseItemEdit { DataType = dataType });
 
             Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void GetIndexColumns_Should_Return_Cloumns_Correctly()
+        {
+            var api = new SqlServerApiMock();
+            var data1 = new Mock<IDynamicTableObject>();
+            data1.SetupGet(x => x.obj)
+                .Returns(new Dictionary<string, object> { { "index_keys", "c1,c2" } });
+            var data2 = new Mock<IDynamicTableObject>();
+            data2.SetupGet(x => x.obj)
+                .Returns(new Dictionary<string, object> { { "index_keys", "c3" } });
+            var db = new Mock<IRelationalDatabase>();
+            db.Setup(x => x.Query(It.IsAny<string>()))
+                .Returns(new[] { data1.Object, data2.Object });
+
+            var result = api.GetIndexColumns(db.Object, "table1");
+
+            Assert.Collection(result,
+                x => Assert.Equal("c1", x),
+                x => Assert.Equal("c2", x),
+                x => Assert.Equal("c3", x));
+            db.Verify(x => x.Query("EXEC Sp_helpindex [table1]"), Times.Once);
+        }
+
+        [Fact]
+        public void UpdateIndex_Should_Work_Correctly()
+        {
+            var api = new SqlServerApiMock();
+            var data1 = new Mock<IDynamicTableObject>();
+            data1.SetupGet(x => x.obj)
+                .Returns(new Dictionary<string, object>
+                {
+                    { "index_name", "remove_idx" },
+                    { "index_keys", "remove_name" }
+                });
+            var db = new Mock<IRelationalDatabase>();
+            db.Setup(x => x.Query(It.IsAny<string>()))
+                .Returns(new[] { data1.Object });
+            var table = new Mock<ITable>();
+            table.Setup(x => x.createIndex(It.IsAny<string>())).Throws(new Exception());
+            db.Setup(x => x.GetTable("table1")).Returns(table.Object);
+            var columns = new List<DbTableColumn>
+            {
+                new DbTableColumn { Name = "remove_name", IsIndex = false },
+                new DbTableColumn { Name = "add_name", IsIndex = true },
+            };
+
+            api.UpdateIndex(db.Object, "table1", columns);
+
+            db.Verify(x => x.Query("EXEC Sp_helpindex [table1]"), Times.Once);
+            db.Verify(x => x.Execute("DROP INDEX [remove_idx] ON [table1]"), Times.Once);
+            table.Verify(x => x.createIndex("add_name"), Times.Once);
         }
 
         class SqlServerApiMock : SqlServerApi

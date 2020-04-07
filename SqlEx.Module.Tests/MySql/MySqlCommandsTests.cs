@@ -57,6 +57,7 @@ namespace SqlEx.Module.Tests.MySql
                 new DbTableColumn { Name = "id", DataType = "String" },
                 new DbTableColumn { Name = "c1", DataType = "number" },
                 new DbTableColumn { Name = "c3", DataType = "number" },
+                new DbTableColumn { Name = "c5", DataType = "string", Length = 200 },
             };
             var columns = new List<DbTableColumn>
             {
@@ -64,21 +65,23 @@ namespace SqlEx.Module.Tests.MySql
                 new DbTableColumn { Name = "c2", DataType = "bool" },
                 new DbTableColumn { Name = "c3", DataType = "number", Length = 2 },
                 new DbTableColumn { Name = "c4", DataType = "datetime" },
-                new DbTableColumn { Name = "c5", DataType = "string" },
+                new DbTableColumn { Name = "c5", DataType = "string", Length = 300 },
                 new DbTableColumn { Name = "c6", DataType = "number" },
-                new DbTableColumn { Name = "c7", DataType = "varchar" },
+                new DbTableColumn { Name = "c7", DataType = "varchar", Length = 100 },
+                new DbTableColumn { Name = "c8", DataType = "varchar" },
             };
 
             var result = cmd.UpdateTable("table1", oriColumn, columns)
                 .Replace(System.Environment.NewLine, " ");
 
             Assert.Equal("ALTER TABLE `table1` " +
-                         "ADD `c2` bit, " +
-                         "ADD `c4` datetime, " +
-                         "ADD `c5` text, " +
-                         "ADD `c6` double, " +
-                         "ADD `c7` text, " +
-                         "DROP COLUMN `c1`; ", result);
+                "ADD `c2` bit, " +
+                "ADD `c4` datetime, " +
+                "MODIFY `c5` varchar(300), " +
+                "ADD `c6` double, " +
+                "ADD `c7` varchar(100), " +
+                "ADD `c8` varchar(10240), " +
+                "DROP COLUMN `c1`; ", result);
         }
 
         public static readonly IEnumerable<object[]> data_DbTypeToDataType = new[]

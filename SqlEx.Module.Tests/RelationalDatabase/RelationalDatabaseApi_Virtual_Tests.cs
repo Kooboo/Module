@@ -217,6 +217,7 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
                         Assert.Equal("c1", c.Name);
                         Assert.Equal("DbTypeToDataType", c.DataType);
                         Assert.False(c.IsPrimaryKey);
+                        Assert.True(c.IsIndex);
                         Assert.Equal("DbTypeToControlType", c.ControlType);
                     },
                     c =>
@@ -306,6 +307,7 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
                         Assert.Equal("c1", c.Name);
                         Assert.Equal("number", c.DataType);
                         Assert.False(c.IsPrimaryKey);
+                        Assert.True(c.IsIndex);
                         Assert.Equal("Number", c.ControlType);
                     },
                     c =>
@@ -313,6 +315,7 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
                         Assert.Equal("c2", c.Name);
                         Assert.Equal("DbTypeToDataType", c.DataType);
                         Assert.False(c.IsPrimaryKey);
+                        Assert.False(c.IsIndex);
                         Assert.Equal("DbTypeToControlType", c.ControlType);
                     });
                 return true;
@@ -365,6 +368,15 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
             public new Dictionary<string, List<DbTableColumn>> SyncSchema(IRelationalDatabase db, ISchemaMappingRepository repository)
             {
                 return base.SyncSchema(db, repository);
+            }
+
+            internal override void UpdateIndex(IRelationalDatabase db, string tablename, List<DbTableColumn> columns)
+            {
+            }
+
+            internal override string[] GetIndexColumns(IRelationalDatabase db, string table)
+            {
+                return new[] { "c1" };
             }
         }
     }
