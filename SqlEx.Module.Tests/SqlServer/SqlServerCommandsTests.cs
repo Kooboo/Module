@@ -79,6 +79,7 @@ namespace SqlEx.Module.Tests.SqlServer
                 new DbTableColumn { Name = "id", DataType = "String" },
                 new DbTableColumn { Name = "c1", DataType = "number" },
                 new DbTableColumn { Name = "c3", DataType = "number" },
+                new DbTableColumn { Name = "c5", DataType = "string", Length = 200 },
             };
             var columns = new List<DbTableColumn>
             {
@@ -86,19 +87,22 @@ namespace SqlEx.Module.Tests.SqlServer
                 new DbTableColumn { Name = "c2", DataType = "bool" },
                 new DbTableColumn { Name = "c3", DataType = "number", Length = 2 },
                 new DbTableColumn { Name = "c4", DataType = "datetime" },
-                new DbTableColumn { Name = "c5", DataType = "string" },
-                new DbTableColumn { Name = "c6", DataType = "varchar" },
+                new DbTableColumn { Name = "c5", DataType = "string", Length = 300 },
+                new DbTableColumn { Name = "c6", DataType = "number" },
+                new DbTableColumn { Name = "c7", DataType = "varchar", Length = 100 },
+                new DbTableColumn { Name = "c8", DataType = "varchar" },
             };
 
             var result = cmd.UpdateTable("table1", oriColumn, columns)
                 .Replace(System.Environment.NewLine, " ");
 
             Assert.Equal("ALTER TABLE [table1] ADD [c2] bit; " +
-                         "ALTER TABLE [table1] ALTER COLUMN [c3] float; " +
-                         "ALTER TABLE [table1] ADD [c4] datetime; " +
-                         "ALTER TABLE [table1] ADD [c5] nvarchar(max); " +
-                         "ALTER TABLE [table1] ADD [c6] nvarchar(max); " +
-                         "ALTER TABLE [table1] DROP COLUMN [c1]; "
+                "ALTER TABLE [table1] ADD [c4] datetime; " +
+                "ALTER TABLE [table1] ALTER COLUMN [c5] nvarchar(300); " +
+                "ALTER TABLE [table1] ADD [c6] float; " +
+                "ALTER TABLE [table1] ADD [c7] nvarchar(100); " +
+                "ALTER TABLE [table1] ADD [c8] nvarchar(max); " +
+                "ALTER TABLE [table1] DROP COLUMN [c1]; "
                 , result);
         }
 

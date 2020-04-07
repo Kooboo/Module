@@ -449,6 +449,16 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
             {
                 return new Dictionary<string, List<DbTableColumn>>();
             }
+
+            internal override void UpdateIndex(IRelationalDatabase db, string tablename, List<DbTableColumn> columns)
+            {
+                throw new NotImplementedException();
+            }
+
+            internal override string[] GetIndexColumns(IRelationalDatabase db, string table)
+            {
+                throw new NotImplementedException();
+            }
         }
     }
 }
