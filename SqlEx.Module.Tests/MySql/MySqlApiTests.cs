@@ -149,6 +149,57 @@ namespace SqlEx.Module.Tests.MySql
             Assert.Equal(expected, result);
         }
 
+        [Fact]
+        public void GetIndexColumns_Should_Return_Cloumns_Correctly()
+        {
+            var api = new MySqlApiMock();
+            var data1 = new Mock<IDynamicTableObject>();
+            data1.SetupGet(x => x.obj)
+                .Returns(new Dictionary<string, object> { { "Column_name", "c1" } });
+            var data2 = new Mock<IDynamicTableObject>();
+            data2.SetupGet(x => x.obj)
+                .Returns(new Dictionary<string, object> { { "Column_name", "c2" } });
+            var db = new Mock<IRelationalDatabase>();
+            db.Setup(x => x.Query(It.IsAny<string>()))
+                .Returns(new[] { data1.Object, data2.Object });
+
+            var result = api.GetIndexColumns(db.Object, "table1");
+
+            Assert.Collection(result, x => Assert.Equal("c1", x), x => Assert.Equal("c2", x));
+            db.Verify(x => x.Query("show index from `table1`"), Times.Once);
+        }
+
+        [Fact]
+        public void UpdateIndex_Should_Work_Correctly()
+        {
+            var api = new MySqlApiMock();
+            var data1 = new Mock<IDynamicTableObject>();
+            data1.SetupGet(x => x.obj)
+                .Returns(new Dictionary<string, object>
+                {
+                    { "Key_name", "remove_key" },
+                    { "Column_name", "remove_column" }
+                });
+            var db = new Mock<IRelationalDatabase>();
+            db.Setup(x => x.Query(It.IsAny<string>()))
+                .Returns(new[] { data1.Object });
+            var table = new Mock<ITable>();
+            table.Setup(x => x.createIndex(It.IsAny<string>())).Throws(new Exception());
+            db.Setup(x => x.GetTable("table1")).Returns(table.Object);
+            var columns = new List<DbTableColumn>
+            {
+                new DbTableColumn { Name = "remove_name", IsIndex = false },
+                new DbTableColumn { Name = "add_name", IsIndex = true },
+            };
+
+            api.UpdateIndex(db.Object, "table1", columns);
+
+            db.Verify(x => x.Query("show index from `table1`"), Times.Once);
+            db.Verify(x => x.Execute("DROP INDEX `remove_key` ON `table1`"), Times.Once);
+            table.Verify(x => x.createIndex("add_name"), Times.Once);
+            db.Verify(x => x.Execute("create fulltext index `add_name` on `table1`(`add_name`)"), Times.Once);
+        }
+
         class MySqlApiMock : MySqlApi
         {
             public new bool IsExistTable(IRelationalDatabase db, string name)

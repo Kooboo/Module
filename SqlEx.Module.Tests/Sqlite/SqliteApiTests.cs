@@ -119,7 +119,7 @@ namespace SqlEx.Module.Tests.Sqlite
             var columns = new List<DbTableColumn>
             {
                 new DbTableColumn { Name = "id", DataType = "number"},
-                new DbTableColumn { Name = "c1", DataType = "string"},
+                new DbTableColumn { Name = "c1", DataType = "string", IsIndex = true },
                 new DbTableColumn { Name = "c2", DataType = "string"},
                 new DbTableColumn { Name = "c4", DataType = "String"},
                 new DbTableColumn { Name = "c5", DataType = "number"},
@@ -132,6 +132,8 @@ namespace SqlEx.Module.Tests.Sqlite
                 new DbTableColumn { Name = "c2", DataType = "string"},
                 new DbTableColumn { Name = "c3", DataType = "number"},
             };
+            var table = new Mock<ITable>();
+            db.Setup(x => x.GetTable("table1")).Returns(table.Object);
             var sqlite = new SqliteApiMock();
 
             sqlite.UpdateTable(db.Object, "table1", columns, originalColumns);
@@ -161,6 +163,7 @@ namespace SqlEx.Module.Tests.Sqlite
                 return true;
             };
             db.Verify(x => x.Execute(It.Is<string>(sql => verify(sql))), Times.Once);
+            table.Verify(x => x.createIndex("c1"), Times.Once);
         }
 
         [Fact]
@@ -216,6 +219,36 @@ namespace SqlEx.Module.Tests.Sqlite
             var result = sqlite.GetClrType(new DatabaseItemEdit { DataType = dataType });
 
             Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void GetIndexColumns_Should_Return_Cloumns_Correctly()
+        {
+            var api = new SqliteApiMock();
+            var listData1 = new Mock<IDynamicTableObject>();
+            listData1.SetupGet(x => x.obj)
+                .Returns(new Dictionary<string, object> { { "name", "idx1" } });
+            var listData2 = new Mock<IDynamicTableObject>();
+            listData2.SetupGet(x => x.obj)
+                .Returns(new Dictionary<string, object> { { "name", "idx2" } });
+            var idxData1 = new Mock<IDynamicTableObject>();
+            idxData1.SetupGet(x => x.obj)
+                .Returns(new Dictionary<string, object> { { "name", "c1" } });
+            var idxData2 = new Mock<IDynamicTableObject>();
+            idxData2.SetupGet(x => x.obj)
+                .Returns(new Dictionary<string, object> { { "name", "c2" } });
+            var db = new Mock<IRelationalDatabase>();
+            db.SetupSequence(x => x.Query(It.IsAny<string>()))
+                .Returns(new[] { listData1.Object, listData2.Object })
+                .Returns(new[] { idxData1.Object })
+                .Returns(new[] { idxData2.Object });
+
+            var result = api.GetIndexColumns(db.Object, "table1");
+
+            Assert.Collection(result, x => Assert.Equal("c1", x), x => Assert.Equal("c2", x));
+            db.Verify(x => x.Query("SELECT name from pragma_index_list('table1')"), Times.Once);
+            db.Verify(x => x.Query("SELECT name from pragma_index_info('idx1')"), Times.Once);
+            db.Verify(x => x.Query("SELECT name from pragma_index_info('idx2')"), Times.Once);
         }
 
         class SqliteApiMock : SqliteApi

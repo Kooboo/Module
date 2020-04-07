@@ -84,22 +84,22 @@ namespace SqlEx.Module.code.Sqlite
             }
         }
 
-        private string GetCreateIndexSql(string oldCreateIndexSql, List<DbTableColumn> newColumns)
-        {
-            var splited = oldCreateIndexSql.Replace("\r", "").Replace("\n", "")
-                .Split(new[] { '(' }, StringSplitOptions.RemoveEmptyEntries);
+        //private string GetCreateIndexSql(string oldCreateIndexSql, List<DbTableColumn> newColumns)
+        //{
+        //    var splited = oldCreateIndexSql.Replace("\r", "").Replace("\n", "")
+        //        .Split(new[] { '(' }, StringSplitOptions.RemoveEmptyEntries);
 
-            var indexColumnRemoved = ColumnNameRegex.Matches(splited[1]).Cast<Match>().Select(x => x.Groups[1].Value)
-                .Where(x => newColumns.All(n => !n.Name.Equals(x, StringComparison.OrdinalIgnoreCase)))
-                .ToArray();
-            if (indexColumnRemoved.Any())
-            {
-                throw new Exception("Cannot remove column that has index, column name: "
-                                    + string.Join(", ", indexColumnRemoved));
-            }
+        //    var indexColumnRemoved = ColumnNameRegex.Matches(splited[1]).Cast<Match>().Select(x => x.Groups[1].Value)
+        //        .Where(x => newColumns.All(n => !n.Name.Equals(x, StringComparison.OrdinalIgnoreCase)))
+        //        .ToArray();
+        //    if (indexColumnRemoved.Any())
+        //    {
+        //        throw new Exception("Cannot remove column that has index, column name: "
+        //                            + string.Join(", ", indexColumnRemoved));
+        //    }
 
-            return oldCreateIndexSql + ";";
-        }
+        //    return oldCreateIndexSql + ";";
+        //}
 
         private string GetCreateTableSql(string tablename, string oldCreateTableSql, List<DbTableColumn> newColumns)
         {
