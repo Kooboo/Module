@@ -153,6 +153,10 @@ namespace SqlEx.Module.code.MySql
                 {
                     sb.AppendLine($"ADD {GenerateColumnDefine(column)},");
                 }
+                else if (ori.Length != column.Length && column.DataType.ToLower() == "string")
+                {
+                    sb.AppendLine($"MODIFY {GenerateColumnDefine(column)},");
+                }
             }
 
             // remove column
