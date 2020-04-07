@@ -447,19 +447,17 @@ namespace SqlEx.Module.code.RelationalDatabase
             {
                 var oriCol = oriCols[i];
                 var newCol = newCols[i];
-                if (oriCol.Name != newCol.Name)
+                if (oriCol.Name != newCol.Name || oriCol.IsIndex != newCol.IsIndex || oriCol.Length != newCol.Length)
                 {
                     shouldUpdateTable = true;
                     shouldUpdateSchema = true;
                     return;
                 }
 
-                if (oriCol.ControlType != newCol.ControlType || oriCol.Setting != newCol.Setting || oriCol.IsIndex != newCol.IsIndex)
+                if (oriCol.ControlType != newCol.ControlType || oriCol.Setting != newCol.Setting)
                 {
                     shouldUpdateSchema = true;
                 }
-
-                if (oriCol.IsIndex != newCol.IsIndex) shouldUpdateTable = true;
             }
         }
 

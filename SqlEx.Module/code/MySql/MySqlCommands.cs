@@ -189,11 +189,22 @@ namespace SqlEx.Module.code.MySql
                     break;
                 case "string":
                 default:
-                    dataType = "varchar(1024)";
+                    dataType = "varchar";
                     break;
             }
 
-            return $"{Quote(column.Name)} {dataType}";
+            if (dataType != "varchar")
+            {
+                return $"{Quote(column.Name)} {dataType}";
+            }
+
+            if (column.IsPrimaryKey && (column.Length > 512 || column.Length <= 0))
+            {
+                column.Length = 512;
+            }
+
+            var length = column.Length > 0 ? $"({column.Length})" : "(10240)";
+            return $"{Quote(column.Name)} {dataType}{length}";
         }
 
     }

@@ -184,8 +184,14 @@ namespace SqlEx.Module.code.SqlServer
                     break;
             }
 
-            var length = dataType != "nvarchar" ? "" : "(1024)";
-            return $"{Quote(column.Name)} {dataType}{length}";
+            if (dataType != "nvarchar")
+            {
+                return $"{Quote(column.Name)} {dataType}";
+            }
+
+            var length = column.Length > 0 && column.Length <= 4000 ? $"({column.Length})" : "(max)";
+            var notNull = column.IsPrimaryKey ? " NOT NULL" : "";
+            return $"{Quote(column.Name)} {dataType}{length}{notNull}";
         }
     }
 }

@@ -56,6 +56,7 @@ namespace SqlEx.Module.code.Sqlite
 
         public override string UpdateTable(string table, List<DbTableColumn> originalColumns, List<DbTableColumn> columns)
         {
+            // see SqliteApi.UpdateTable
             throw new NotImplementedException();
         }
     }

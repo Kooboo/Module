@@ -221,7 +221,8 @@ namespace SqlEx.Module.code.Sqlite
                     break;
             }
 
-            return $"\"{column.Name}\" {dataType},";
+            var length = column.Length > 0 ? $"({column.Length})" : "";
+            return $"\"{column.Name}\" {dataType}{length}";
         }
 
         internal override string[] GetIndexColumns(IRelationalDatabase db, string table)
