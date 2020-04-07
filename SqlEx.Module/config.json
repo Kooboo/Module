@@ -7,7 +7,9 @@
       "sqlserver.table": "SqlServer表",
       "connectfailed": "连接数据库失败",
       "mysqlConfigTips": "请为mysql添加数据库连接配置在系统配置页面",
-      "sqlserverConfigTips": "请为sqlserver添加数据库连接配置在系统配置页面"
+      "sqlserverConfigTips": "请为sqlserver添加数据库连接配置在系统配置页面",
+      "tips": "提示",
+      "noPrimaryKeyUnedit": "因为没有索引导致不能编辑!"
     },
     "en": {
       "Sqlite": "",
@@ -17,7 +19,9 @@
       "sqlserver.table": "SqlServer Tables",
       "connectfailed": "Connecting database faild",
       "mysqlConfigTips": "Please add the connection string to the system configuration of the site for the mysql",
-      "sqlserverConfigTips": "Please add the connection string to the system configuration of the site for the sqlServer"
+      "sqlserverConfigTips": "Please add the connection string to the system configuration of the site for the sqlServer",
+      "tips": "tips",
+      "noPrimaryKeyUnedit": "Cannot edit because there is no primaryKey!"
     }
   }
 }

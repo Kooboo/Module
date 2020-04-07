@@ -28,7 +28,7 @@
     </kb-table-column>
     <kb-table-column width="100px" align="right">
       <template v-slot="row">
-        <a class="btn btn-ms blue" :href="editUrl(row)" @click.stop=""
+        <a class="btn btn-ms blue" @click.stop="redirectUrl(row)"
           >{{Kooboo.text.common.edit}}</a
         >
       </template>
@@ -39,6 +39,36 @@
     :total-pages="model.totalPages"
     @change="getData"
   ></kb-pager>
+
+  <div
+    class="modal fade"
+    data-backdrop="static"
+    data-keyboard="false"
+    v-kb-modal="showUnableEditConfirm"
+  >
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <button class="close" data-dismiss="modal">
+            <i class="fa fa-close"></i>
+          </button>
+          <h4 class="modal-title">{{Kooboo.text["sqlex.module"].tips}}</h4>
+        </div>
+        <div class="modal-body" v-if="showUnableEditConfirm">
+          <div class="panel">
+            <div style="padding: 20px">
+              <h5 class="text-danger">
+                {{Kooboo.text["sqlex.module"]["noPrimaryKeyUnedit"]}}
+              </h5>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn gray" data-dismiss="modal">Cancel</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 <script src="js/main.js"></script>
 <script>
@@ -54,6 +84,7 @@
       data: function() {
         vm = this;
         return {
+          showUnableEditConfirm: false,
           sqlType: Kooboo.getQueryString("sqlType"),
           breads: [
             {
@@ -68,8 +99,7 @@
                   Kooboo.getQueryString("sqlType").toLowerCase() + ".table"
                 ],
               url: koobooModule.recombineUrl(
-                koobooModule.getModuleRootPath() +
-                  `/index.html`,
+                koobooModule.getModuleRootPath() + `/index.html`,
                 {
                   SiteId: Kooboo.getQueryString("SiteId"),
                   sqlType: Kooboo.getQueryString("sqlType")
@@ -165,7 +195,7 @@
               });
           }
         },
-        editUrl: function(row) {
+        redirectUrl: function(row) {
           var paras = {
             SiteId: vm.siteId,
             id: row[vm.primaryKey],
@@ -175,10 +205,15 @@
           if (vm.primaryKey) {
             Object.assign(paras, { primaryKey: vm.primaryKey });
           }
-          return koobooModule.recombineUrl(
+          var url = koobooModule.recombineUrl(
             koobooModule.getModuleRootPath() + "/pages/EditData.html",
             paras
           );
+          if (vm.primaryKey) {
+            location.href = url;
+          } else {
+            vm.showUnableEditConfirm = true;
+          }
         },
         getData: function(pageNr) {
           koobooModule[vm.sqlType + "Model"]
