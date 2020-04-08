@@ -49,21 +49,21 @@
     <div class="modal-dialog">
       <div class="modal-content">
         <div class="modal-header">
-          <button class="close" data-dismiss="modal">
+          <button class="close" @click="cancelModal">
             <i class="fa fa-close"></i>
           </button>
           <h4 class="modal-title">{{Kooboo.text["sqlex.module"].tips}}</h4>
         </div>
         <div class="modal-body" v-if="showUnableEditConfirm">
           <div class="panel">
-            <div style="padding: 20px">
+            <div style="padding: 20px;">
               <h5 class="text-danger">
-                {{Kooboo.text["sqlex.module"]["noPrimaryKeyUnedit"]}}
+                {{tipsMessage}}
               </h5>
             </div>
           </div>
           <div class="modal-footer">
-            <button class="btn gray" data-dismiss="modal">Cancel</button>
+            <button class="btn gray" @click="cancelModal">Cancel</button>
           </div>
         </div>
       </div>
@@ -72,26 +72,26 @@
 </div>
 <script src="js/main.js"></script>
 <script>
-  (function() {
+  (function () {
     Kooboo.loadJS([
       "/_Admin/Scripts/components/kbBreadcrumb.js",
       "/_Admin/Scripts/components/kbTable.js",
-      "/_Admin/Scripts/components/kbPager.js"
+      "/_Admin/Scripts/components/kbPager.js",
     ]);
     var vm;
     new Vue({
       el: "#app",
-      data: function() {
+      data: function () {
         vm = this;
         return {
           showUnableEditConfirm: false,
           sqlType: Kooboo.getQueryString("sqlType"),
           breads: [
             {
-              name: "SITES"
+              name: "SITES",
             },
             {
-              name: "DASHBOARD"
+              name: "DASHBOARD",
             },
             {
               name:
@@ -102,27 +102,28 @@
                 koobooModule.getModuleRootPath() + `/index.html`,
                 {
                   SiteId: Kooboo.getQueryString("SiteId"),
-                  sqlType: Kooboo.getQueryString("sqlType")
+                  sqlType: Kooboo.getQueryString("sqlType"),
                 }
-              )
+              ),
             },
             {
-              name: Kooboo.getQueryString("table")
-            }
+              name: Kooboo.getQueryString("table"),
+            },
           ],
           primaryKey: undefined,
           siteId: Kooboo.getQueryString("SiteId"),
           selectedRows: [],
-          model: {}
+          model: {},
+          tipsMessage: "",
         };
       },
       computed: {
-        createDataUrl: function() {
+        createDataUrl: function () {
           var paras = {
             SiteId: vm.siteId,
             table: Kooboo.getQueryString("table"),
             sqlType: vm.sqlType,
-            isNewData: "true"
+            isNewData: "true",
           };
           if (vm.primaryKey) {
             Object.assign(paras, { primaryKey: vm.primaryKey });
@@ -132,23 +133,23 @@
             paras
           );
         },
-        columnsPageUrl: function() {
+        columnsPageUrl: function () {
           return koobooModule.recombineUrl(
             koobooModule.getModuleRootPath() + "/pages/Columns.html",
             {
               SiteId: this.siteId,
               table: Kooboo.getQueryString("table"),
               from: "Data",
-              sqlType: vm.sqlType
+              sqlType: vm.sqlType,
             }
           );
         },
 
-        listKeys: function() {
+        listKeys: function () {
           var keys = [];
           if (this.model.list) {
-            this.model.list.forEach(function(item) {
-              item.forEach(function(i) {
+            this.model.list.forEach(function (item) {
+              item.forEach(function (i) {
                 if (i.key != "_id" && keys.indexOf(i.key) == -1) {
                   keys.push(i.key);
                 }
@@ -157,50 +158,60 @@
           }
           return keys;
         },
-        list: function() {
+        list: function () {
           var items = [];
           if (this.model.list) {
-            this.model.list.forEach(function(item) {
+            this.model.list.forEach(function (item) {
               var obj = {};
-              item.forEach(function(i) {
+              item.forEach(function (i) {
                 obj[i.key] = i.value;
               });
               items.push(obj);
             });
           }
           return items;
-        }
+        },
       },
-      mounted: function() {
+      mounted: function () {
         this.getData();
       },
       methods: {
-        onDelete: function() {
-          if (confirm(Kooboo.text.confirm.deleteItems)) {
-            var ids = vm.selectedRows.map(function(o) {
-              if (o[vm.primaryKey]) {
-                return o[vm.primaryKey];
-              }
-            });
-            koobooModule[vm.sqlType + "Model"]
-              .DeleteData({
-                tableName: Kooboo.getQueryString("table"),
-                values: ids
-              })
-              .then(function(res) {
-                if (res.success) {
-                  vm.getData();
-                  window.info.done(Kooboo.text.info.delete.success);
+        cancelModal: function () {
+          vm.showUnableEditConfirm = false;
+          vm.selectedRows = [];
+          vm.tipsMessage = "";
+        },
+        onDelete: function () {
+          vm.tipsMessage = Kooboo.text["sqlex.module"]["noPrimaryKeyUnDelete"];
+          if (vm.primaryKey) {
+            if (confirm(Kooboo.text.confirm.deleteItems)) {
+              var ids = vm.selectedRows.map(function (o) {
+                if (o[vm.primaryKey]) {
+                  return o[vm.primaryKey];
                 }
               });
+              koobooModule[vm.sqlType + "Model"]
+                .DeleteData({
+                  tableName: Kooboo.getQueryString("table"),
+                  values: ids,
+                })
+                .then(function (res) {
+                  if (res.success) {
+                    vm.getData();
+                    window.info.done(Kooboo.text.info.delete.success);
+                  }
+                });
+            }
+          } else {
+            vm.showUnableEditConfirm = true;
           }
         },
-        redirectUrl: function(row) {
+        redirectUrl: function (row) {
           var paras = {
             SiteId: vm.siteId,
             id: row[vm.primaryKey],
             table: Kooboo.getQueryString("table"),
-            sqlType: vm.sqlType
+            sqlType: vm.sqlType,
           };
           if (vm.primaryKey) {
             Object.assign(paras, { primaryKey: vm.primaryKey });
@@ -212,23 +223,24 @@
           if (vm.primaryKey) {
             location.href = url;
           } else {
+            vm.tipsMessage = Kooboo.text["sqlex.module"]["noPrimaryKeyUnedit"];
             vm.showUnableEditConfirm = true;
           }
         },
-        getData: function(pageNr) {
+        getData: function (pageNr) {
           koobooModule[vm.sqlType + "Model"]
             .Data({
               table: Kooboo.getQueryString("table"),
-              pageNr: pageNr || 1
+              pageNr: pageNr || 1,
             })
-            .then(function(res) {
+            .then(function (res) {
               if (res.success) {
                 vm.model = res.model;
                 vm.primaryKey = vm.model.primaryKey;
               }
             });
-        }
-      }
+        },
+      },
     });
   })();
 </script>
