@@ -78,7 +78,7 @@ namespace SqlEx.Module.code.Sqlite
 
             db.Execute(sb.ToString());
 
-            foreach (var item in columns.Where(w => w.IsIndex))
+            foreach (var item in columns.Where(w => w.IsIndex && !w.IsPrimaryKey))
             {
                 db.GetTable(tablename).createIndex(item.Name);
             }
@@ -199,11 +199,11 @@ namespace SqlEx.Module.code.Sqlite
 
         private string GenerateColumnDefine(string sql, DbTableColumn column)
         {
-            var match = Regex.Match(sql, $"(\"{column.Name}\" *[a-z\\(\\d\\) ]+?,)", RegexOptions.IgnoreCase);
-            if (match.Success)
-            {
-                return match.Value;
-            }
+            //var match = Regex.Match(sql, $"(\"{column.Name}\" *[a-z\\(\\d\\) ]+?,)", RegexOptions.IgnoreCase);
+            //if (match.Success)
+            //{
+            //    return match.Value;
+            //}
 
             string dataType;
             switch (column.DataType.ToLower())
