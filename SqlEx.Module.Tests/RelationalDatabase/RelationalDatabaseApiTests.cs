@@ -53,7 +53,7 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
 
             api.Object.MockDb.Verify(x => x.GetTable("tablename"), Times.Once);
             table.Verify(x => x.all(), Times.Once);
-            api.Object.MockRepo.Verify(x => x.AddOrUpdateSchema("tablename",
+            api.Object.MockRepo.Verify(x => x.AddOrUpdateSchema(api.Object.DbType, "tablename",
                     It.Is<List<DbTableColumn>>(c => c.Count == 1 && c[0].Name == "_id")),
                 Times.Once);
         }
@@ -77,7 +77,7 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
 
             api.Object.MockDb.Verify(x => x.Execute("DeleteTables_table1,table2"), Times.Once);
             api.Object.MockRepo.Verify(
-                x => x.DeleteTableSchemas(
+                x => x.DeleteTableSchemas(api.Object.DbType, 
                     It.Is<string[]>(ts => ts.Length == 2 && ts[0] == "table1" && ts[1] == "table2")), Times.Once);
         }
 
@@ -102,7 +102,7 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
                 new DbTableColumn { Name = "_id" },
                 new DbTableColumn { Name = "a" }
             };
-            api.Object.MockRepo.Setup(x => x.GetColumns(It.IsAny<string>())).Returns(columns);
+            api.Object.MockRepo.Setup(x => x.GetColumns(api.Object.DbType, It.IsAny<string>())).Returns(columns);
 
             var result = api.Object.Columns("table1", new ApiCall());
 
@@ -126,7 +126,7 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
                 new DbTableColumn { Name = "c1" },
                 new DbTableColumn { Name = "c2" },
             };
-            api.Object.MockRepo.Setup(x => x.GetColumns(It.IsAny<string>())).Returns(new List<DbTableColumn>());
+            api.Object.MockRepo.Setup(x => x.GetColumns(api.Object.DbType, It.IsAny<string>())).Returns(new List<DbTableColumn>());
             api.Object.MockDb.Setup(x => x.GetTable(It.IsAny<string>())).Returns(new Mock<ITable>().Object);
             api.Object.MockCmd.Setup(x => x.GetDefaultColumns()).Returns(oriColumns);
             api.Protected().Setup("UpdateTable",
@@ -135,9 +135,9 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
 
             api.Object.UpdateColumn("table1", columns, new ApiCall());
 
-            api.Object.MockRepo.Verify(x => x.AddOrUpdateSchema("table1", oriColumns), Times.Once);
+            api.Object.MockRepo.Verify(x => x.AddOrUpdateSchema(api.Object.DbType, "table1", oriColumns), Times.Once);
             api.Protected().Verify("UpdateTable", Times.Once(), api.Object.MockDb.Object, "table1", columns, oriColumns);
-            api.Object.MockRepo.Verify(x => x.AddOrUpdateSchema("table1", columns), Times.Once);
+            api.Object.MockRepo.Verify(x => x.AddOrUpdateSchema(api.Object.DbType, "table1", columns), Times.Once);
 
         }
 
@@ -145,13 +145,14 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
         public void Data_Should_OrderBy_PrimaryKey_Column_When_Sortfield_Not_Found()
         {
             var api = new Mock<RelationalDatabaseApiMock> { CallBase = true };
+ 
             var columns = new List<DbTableColumn>
             {
                 new DbTableColumn { Name = "c1" },
                 new DbTableColumn { Name = "pk", IsPrimaryKey = true },
                 new DbTableColumn { Name = "c2" },
             };
-            api.Object.MockRepo.Setup(x => x.GetColumns(It.IsAny<string>())).Returns(columns);
+            api.Object.MockRepo.Setup(x => x.GetColumns(api.Object.DbType, It.IsAny<string>())).Returns(columns);
             var count = new Mock<IDynamicTableObject>();
             count.SetupGet(x => x.Values).Returns(new Dictionary<string, object> { { "count", 1 } });
             api.Object.MockDb
@@ -174,7 +175,7 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
             {
                 new DbTableColumn { Name = "pk", IsPrimaryKey = true },
             };
-            api.Object.MockRepo.Setup(x => x.GetColumns(It.IsAny<string>())).Returns(columns);
+            api.Object.MockRepo.Setup(x => x.GetColumns(api.Object.DbType, It.IsAny<string>())).Returns(columns);
             var count = new Mock<IDynamicTableObject>();
             count.SetupGet(x => x.Values).Returns(new Dictionary<string, object> { { "count", 12 } });
             var data = new[] { count.Object };
@@ -216,7 +217,7 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
                 new DbTableColumn { Name = "c2",DataType="bool" },
                 new DbTableColumn { Name = "c3",DataType="datetime" }
             };
-            api.Object.MockRepo.Setup(x => x.GetColumns(It.IsAny<string>())).Returns(columns);
+            api.Object.MockRepo.Setup(x => x.GetColumns(api.Object.DbType, It.IsAny<string>())).Returns(columns);
             var table = new Mock<ITable>();
             var data = new Mock<IDynamicTableObject>();
             data.SetupGet(x => x.Values).Returns(new Dictionary<string, object>
@@ -262,7 +263,7 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
             {
                 new DbTableColumn { Name = "id", DataType="number" },
             };
-            api.Object.MockRepo.Setup(x => x.GetColumns(It.IsAny<string>())).Returns(columns);
+            api.Object.MockRepo.Setup(x => x.GetColumns(api.Object.DbType, It.IsAny<string>())).Returns(columns);
             var table = new Mock<ITable>();
             api.Object.MockDb.Setup(x => x.GetTable(It.IsAny<string>())).Returns(table.Object);
 
@@ -284,7 +285,7 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
                 new DbTableColumn { Name = "c2", DataType = "bool" },
                 new DbTableColumn { Name = "c3", DataType = "datetime" }
             };
-            api.Object.MockRepo.Setup(x => x.GetColumns(It.IsAny<string>())).Returns(columns);
+            api.Object.MockRepo.Setup(x => x.GetColumns(api.Object.DbType, It.IsAny<string>())).Returns(columns);
             var table = new Mock<ITable>();
             var data = new Mock<IDynamicTableObject>();
             data.SetupGet(x => x.Values).Returns(new Dictionary<string, object>
@@ -339,7 +340,7 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
                 new DbTableColumn { Name = "c1", DataType = "string" },
                 new DbTableColumn { Name = "c2", DataType = "string" },
             };
-            api.Object.MockRepo.Setup(x => x.GetColumns(It.IsAny<string>())).Returns(columns);
+            api.Object.MockRepo.Setup(x => x.GetColumns(api.Object.DbType, It.IsAny<string>())).Returns(columns);
             var table = new Mock<ITable>();
             api.Object.MockDb.Setup(x => x.GetTable(It.IsAny<string>())).Returns(table.Object);
             var values = new List<DatabaseItemEdit>
@@ -372,7 +373,7 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
                 new DbTableColumn { Name = "c1", DataType = "string" },
                 new DbTableColumn { Name = "c2", DataType = "string" },
             };
-            api.Object.MockRepo.Setup(x => x.GetColumns(It.IsAny<string>())).Returns(columns);
+            api.Object.MockRepo.Setup(x => x.GetColumns(api.Object.DbType, It.IsAny<string>())).Returns(columns);
             var table = new Mock<ITable>();
             api.Object.MockDb.Setup(x => x.GetTable(It.IsAny<string>())).Returns(table.Object);
             var values = new List<DatabaseItemEdit>
@@ -408,7 +409,7 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
         public void SyncSchema_Should_Call_SyncSchema()
         {
             var api = new Mock<RelationalDatabaseApiMock> { CallBase = true };
-            api.Protected().Setup<Dictionary<string, List<DbTableColumn>>>("SyncSchema", ItExpr.IsAny<IRelationalDatabase>(), ItExpr.IsAny<ISchemaMappingRepository>())
+            api.Protected().Setup<Dictionary<string, List<DbTableColumn>>>("SyncSchema", ItExpr.IsAny<IRelationalDatabase>(), ItExpr.IsAny<TableSchemaMappingRepository>())
                 .Returns(new Dictionary<string, List<DbTableColumn>>());
 
             api.Object.SyncSchema(new ApiCall());
@@ -423,8 +424,8 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
             public Mock<IRelationalDatabase> MockDb { get; } =
                 new Mock<IRelationalDatabase>();
 
-            public Mock<ISchemaMappingRepository> MockRepo { get; } =
-                new Mock<ISchemaMappingRepository>();
+            public Mock<TableSchemaMappingRepository> MockRepo { get; } =
+                new Mock<TableSchemaMappingRepository>();
 
             public override string DbType { get; }
             public override bool RequireSite { get; }
@@ -440,12 +441,12 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
                 return typeof(object);
             }
 
-            protected override ISchemaMappingRepository GetSchemaMappingRepository(ApiCall call)
-            {
-                return MockRepo.Object;
-            }
+            //protected override ISchemaMappingRepository GetSchemaMappingRepository(ApiCall call)
+            //{
+            //    return MockRepo.Object;
+            //}
 
-            protected override Dictionary<string, List<DbTableColumn>> SyncSchema(IRelationalDatabase db, ISchemaMappingRepository schemaRepository)
+            protected override Dictionary<string, List<DbTableColumn>> SyncSchema(IRelationalDatabase db, TableSchemaMappingRepository schemaRepository)
             {
                 return new Dictionary<string, List<DbTableColumn>>();
             }

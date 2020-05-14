@@ -33,7 +33,7 @@ namespace SqlEx.Module.code.RelationalDatabase
         public List<string> Tables(ApiCall call)
         {
             var db = GetDatabase(call);
-            SyncSchema(db, GetSchemaMappingRepository(call));
+            SyncSchema(db, StoreService.GetMappingStore(call.WebSite));
             return ListTables(db);
         }
 
@@ -48,7 +48,7 @@ namespace SqlEx.Module.code.RelationalDatabase
 
             // create table and schema
             db.GetTable(name).all();
-            GetSchemaMappingRepository(call).AddOrUpdateSchema(name, Cmd.GetDefaultColumns());
+            StoreService.GetMappingStore(call.WebSite).AddOrUpdateSchema(this.DbType, name, Cmd.GetDefaultColumns());
         }
 
         public void DeleteTables(string names, ApiCall call)
@@ -61,7 +61,7 @@ namespace SqlEx.Module.code.RelationalDatabase
             }
 
             db.Execute(Cmd.DeleteTables(tables));
-            GetSchemaMappingRepository(call).DeleteTableSchemas(tables);
+            StoreService.GetMappingStore(call.WebSite).DeleteTableSchemas(this.DbType, tables);
         }
 
         public bool IsUniqueTableName(string name, ApiCall call)
@@ -73,23 +73,23 @@ namespace SqlEx.Module.code.RelationalDatabase
         public List<DbTableColumn> Columns(string table, ApiCall call)
         {
             var db = GetDatabase(call);
-            var schemaRepository = GetSchemaMappingRepository(call);
+            var schemaRepository = StoreService.GetMappingStore(call.WebSite);  
             SyncSchema(db, schemaRepository);
-            var columns = schemaRepository.GetColumns(table);
+            var columns = schemaRepository.GetColumns(this.DbType, table);
             return columns.Where(x => x.Name != DefaultIdFieldName).ToList();
         }
 
         public void UpdateColumn(string tablename, List<DbTableColumn> columns, ApiCall call)
         {
             var db = GetDatabase(call);
-            var schemaRepository = GetSchemaMappingRepository(call);
-            var originalColumns = schemaRepository.GetColumns(tablename);
+            var schemaRepository = StoreService.GetMappingStore(call.WebSite); 
+            var originalColumns = schemaRepository.GetColumns(this.DbType, tablename);
             // table not exists, create
             if (originalColumns.Count <= 0)
             {
                 db.GetTable(tablename).all();
                 originalColumns = Cmd.GetDefaultColumns();
-                schemaRepository.AddOrUpdateSchema(tablename, originalColumns);
+                schemaRepository.AddOrUpdateSchema(this.DbType, tablename, originalColumns);
             }
 
             // update table
@@ -108,7 +108,7 @@ namespace SqlEx.Module.code.RelationalDatabase
 
             if (shouldUpdateSchema)
             {
-                schemaRepository.AddOrUpdateSchema(tablename, columns);
+                schemaRepository.AddOrUpdateSchema(this.DbType, tablename, columns);
             }
         }
 
@@ -117,7 +117,7 @@ namespace SqlEx.Module.code.RelationalDatabase
             var db = GetDatabase(call);
             var sortfield = call.GetValue("sort", "orderby", "order");
             // verify sortfield. 
-            var columns = GetSchemaMappingRepository(call).GetColumns(table);
+            var columns = StoreService.GetMappingStore(call.WebSite).GetColumns(this.DbType, table);
             if (sortfield != null)
             {
                 var col = columns.FirstOrDefault(o => o.Name == sortfield);
@@ -172,7 +172,7 @@ namespace SqlEx.Module.code.RelationalDatabase
             var db = GetDatabase(call);
             var result = new List<DatabaseItemEdit>();
             var obj = id == Guid.Empty.ToString() ? null : db.GetTable(tablename).get(id);
-            var cloumns = GetAllColumnsForItemEdit(GetSchemaMappingRepository(call), tablename);
+            var cloumns = GetAllColumnsForItemEdit(call, tablename);
 
             foreach (var model in cloumns)
             {
@@ -208,7 +208,7 @@ namespace SqlEx.Module.code.RelationalDatabase
         {
             var db = GetDatabase(call);
             var dbTable = db.GetTable(tablename);
-            var columns = GetAllColumnsForItemEdit(GetSchemaMappingRepository(call), tablename);
+            var columns = GetAllColumnsForItemEdit(call, tablename);
 
             // edit
             if (!string.IsNullOrWhiteSpace(id) && id != Guid.Empty.ToString())
@@ -244,7 +244,7 @@ namespace SqlEx.Module.code.RelationalDatabase
         {
             var db = GetDatabase(call);
             var dbTable = db.GetTable(tablename);
-            var columns = GetAllColumnsForItemEdit(GetSchemaMappingRepository(call), tablename);
+            var columns = GetAllColumnsForItemEdit(call, tablename);
 
             return AddData(dbTable, values, columns);
         }
@@ -292,8 +292,10 @@ namespace SqlEx.Module.code.RelationalDatabase
 
         public void SyncSchema(ApiCall call)
         {
+            var repo = StoreService.GetMappingStore(call.WebSite); 
+
             var db = GetDatabase(call);
-            SyncSchema(db, GetSchemaMappingRepository(call));
+            SyncSchema(db, repo);
         }
 
         protected virtual void UpdateTable(IRelationalDatabase db, string tablename, List<DbTableColumn> columns, List<DbTableColumn> originalColumns)
@@ -327,16 +329,16 @@ namespace SqlEx.Module.code.RelationalDatabase
                 .ToList();
         }
 
-        protected virtual Dictionary<string, List<DbTableColumn>> SyncSchema(IRelationalDatabase db, ISchemaMappingRepository schemaRepository)
+        protected virtual Dictionary<string, List<DbTableColumn>> SyncSchema(IRelationalDatabase db, TableSchemaMappingRepository schemaRepository)
         {
             var newCloumnFromDb = new Dictionary<string, List<DbTableColumn>>();
-            var koobooSchemas = schemaRepository.SelectAll().Where(x => x != null).ToDictionary(x => x.TableName, x => x.Columns);
+            var koobooSchemas = schemaRepository.SelectAll(this.DbType).Where(x => x != null).ToDictionary(x => x.TableName, x => x.Columns);
             var allTables = ListTables(db);
 
             var deletedTables = koobooSchemas.Keys.Except(allTables).ToArray();
             if (deletedTables.Length > 0)
             {
-                schemaRepository.DeleteTableSchemas(deletedTables);
+                schemaRepository.DeleteTableSchemas(this.DbType, deletedTables);
             }
 
             foreach (var table in allTables)
@@ -358,7 +360,7 @@ namespace SqlEx.Module.code.RelationalDatabase
                         ControlType = Cmd.DbTypeToControlType(s.Type)
                     }).ToList();
 
-                    schemaRepository.AddOrUpdateSchema(table, koobooSchema);
+                    schemaRepository.AddOrUpdateSchema(this.DbType, table, koobooSchema);
                     newCloumnFromDb.Add(table, koobooSchema);
                 }
                 else
@@ -396,7 +398,7 @@ namespace SqlEx.Module.code.RelationalDatabase
                     if (shouldUpdateSchema)
                     {
                         newCloumnFromDb.Add(table, dbNewColumn);
-                        schemaRepository.AddOrUpdateSchema(table, newSchema);
+                        schemaRepository.AddOrUpdateSchema(this.DbType, table, newSchema);
                     }
                 }
             }
@@ -406,9 +408,12 @@ namespace SqlEx.Module.code.RelationalDatabase
 
         internal abstract string[] GetIndexColumns(IRelationalDatabase db, string table);
 
-        private List<DatabaseItemEdit> GetAllColumnsForItemEdit(ISchemaMappingRepository schemaRepository, string table)
+        private List<DatabaseItemEdit> GetAllColumnsForItemEdit(ApiCall call, string table)
         {
-            return schemaRepository.GetColumns(table)
+
+           var schemaRepository = StoreService.GetMappingStore(call.WebSite); 
+             
+            return schemaRepository.GetColumns(this.DbType, table)
                 .Select(x => new DatabaseItemEdit
                 {
                     ControlType = x.ControlType,
@@ -463,9 +468,9 @@ namespace SqlEx.Module.code.RelationalDatabase
             }
         }
 
-        protected virtual ISchemaMappingRepository GetSchemaMappingRepository(ApiCall call)
-        {
-            return new SchemaMappingRepository(DbType, call);
+        protected virtual TableSchemaMappingRepository GetSchemaMappingRepository(ApiCall call)
+        {  
+            return new TableSchemaMappingRepository(DbType, call);
         }
     }
 }

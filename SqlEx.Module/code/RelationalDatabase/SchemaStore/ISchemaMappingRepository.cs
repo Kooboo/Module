@@ -5,9 +5,9 @@ namespace SqlEx.Module.code.RelationalDatabase.SchemaStore
 {
     public interface ISchemaMappingRepository
     {
-        void AddOrUpdateSchema(string tableName, List<DbTableColumn> columns);
-        void DeleteTableSchemas(string[] tables);
-        List<TableSchemaMapping> SelectAll();
-        List<DbTableColumn> GetColumns(string table);
+        void AddOrUpdateSchema(string dbtype, string tableName, List<DbTableColumn> columns);
+        void DeleteTableSchemas(string dbtype, string[] tables);
+        List<TableSchemaMapping> SelectAll(string dbtype);
+        List<DbTableColumn> GetColumns(string dbtype, string table);
     }
 }

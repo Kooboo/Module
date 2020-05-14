@@ -161,19 +161,19 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
             executer.Setup(x => x.GetSchema(It.IsAny<string>()))
                 .Returns(new SqliteSchema(new RelationalSchema.Item[0]));
             db.SetupGet(x => x.SqlExecuter).Returns(executer.Object);
-            var store = new Mock<ISchemaMappingRepository>();
+            var store = new Mock<TableSchemaMappingRepository>();
             var storeSchemas = new List<TableSchemaMapping>
             {
                 new TableSchemaMapping { TableName = "a" },
                 new TableSchemaMapping { TableName = "table1" },
                 new TableSchemaMapping { TableName = "b" },
             };
-            store.Setup(x => x.SelectAll()).Returns(storeSchemas);
-            store.Setup(x => x.GetColumns(It.IsAny<string>())).Returns(new List<DbTableColumn>());
+            store.Setup(x => x.SelectAll(api.DbType)).Returns(storeSchemas);
+            store.Setup(x => x.GetColumns(api.DbType, It.IsAny<string>())).Returns(new List<DbTableColumn>());
 
             var result = api.SyncSchema(db.Object, store.Object);
 
-            store.Verify(x => x.DeleteTableSchemas(It.Is<string[]>(tables => tables.Length == 2 && tables[0] == "a" && tables[1] == "b")), Times.Once);
+            store.Verify(x => x.DeleteTableSchemas(api.DbType, It.Is<string[]>(tables => tables.Length == 2 && tables[0] == "a" && tables[1] == "b")), Times.Once);
         }
 
         [Fact]
@@ -194,10 +194,10 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
                     new RelationalSchema.Item { Name = "c2", Type = "varchar" },
                 }));
             db.SetupGet(x => x.SqlExecuter).Returns(executer.Object);
-            var store = new Mock<ISchemaMappingRepository>();
+            var store = new Mock<TableSchemaMappingRepository>();
             var storeSchemas = new List<TableSchemaMapping>();
-            store.Setup(x => x.SelectAll()).Returns(storeSchemas);
-            store.Setup(x => x.GetColumns(It.IsAny<string>())).Returns(new List<DbTableColumn>());
+            store.Setup(x => x.SelectAll(api.DbType)).Returns(storeSchemas);
+            store.Setup(x => x.GetColumns(api.DbType,  It.IsAny<string>())).Returns(new List<DbTableColumn>());
 
             var result = api.SyncSchema(db.Object, store.Object);
 
@@ -236,7 +236,7 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
             api.MockCmd.Verify(x => x.DbTypeToControlType("varchar"));
             api.MockCmd.Verify(x => x.DbTypeToDataType("varchar"));
 
-            store.Verify(x => x.AddOrUpdateSchema("table1", result["table1"]), Times.Once);
+            store.Verify(x => x.AddOrUpdateSchema(api.DbType, "table1", result["table1"]), Times.Once);
         }
 
         [Fact]
@@ -258,7 +258,7 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
                     new RelationalSchema.Item { Name = "c2", Type = "varchar" },
                 }));
             db.SetupGet(x => x.SqlExecuter).Returns(executer.Object);
-            var store = new Mock<ISchemaMappingRepository>();
+            var store = new Mock<TableSchemaMappingRepository>();
             var storeSchemas = new List<TableSchemaMapping>
             {
                 new TableSchemaMapping
@@ -272,8 +272,8 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
                     }
                 }
             };
-            store.Setup(x => x.SelectAll()).Returns(storeSchemas);
-            store.Setup(x => x.GetColumns(It.IsAny<string>())).Returns(new List<DbTableColumn>());
+            store.Setup(x => x.SelectAll(api.DbType)).Returns(storeSchemas);
+            store.Setup(x => x.GetColumns(api.DbType, It.IsAny<string>())).Returns(new List<DbTableColumn>());
 
             var result = api.SyncSchema(db.Object, store.Object);
 
@@ -320,7 +320,7 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
                     });
                 return true;
             };
-            store.Verify(x => x.AddOrUpdateSchema("table1", It.Is<List<DbTableColumn>>(cs => storeVerify(cs))), Times.Once);
+            store.Verify(x => x.AddOrUpdateSchema(api.DbType, "table1", It.Is<List<DbTableColumn>>(cs => storeVerify(cs))), Times.Once);
         }
 
         class RelationalDatabaseApiMock : RelationalDatabaseApi<RelationalDatabaseCommandMock>
@@ -365,7 +365,7 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
                 return base.ConvertDataValue(data, columns);
             }
 
-            public new Dictionary<string, List<DbTableColumn>> SyncSchema(IRelationalDatabase db, ISchemaMappingRepository repository)
+            public new Dictionary<string, List<DbTableColumn>> SyncSchema(IRelationalDatabase db, TableSchemaMappingRepository  repository)
             {
                 return base.SyncSchema(db, repository);
             }
