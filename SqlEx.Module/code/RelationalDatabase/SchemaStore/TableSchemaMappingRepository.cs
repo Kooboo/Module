@@ -15,7 +15,8 @@ namespace SqlEx.Module.code.RelationalDatabase.SchemaStore
             {
                 var storeParameters = new ObjectStoreParameters();
                 storeParameters.SetPrimaryKeyField<TableSchemaMapping>(x => x.Id);
-                StoreParameters.AddColumn<TableSchemaMapping>(o => o.DbType, 30); 
+                storeParameters.AddIndex<TableSchemaMapping>(x => x.DbType, 30);
+                storeParameters.AddIndex<TableSchemaMapping>(x => x.Name, 120);
                 return storeParameters;
             }
         }
