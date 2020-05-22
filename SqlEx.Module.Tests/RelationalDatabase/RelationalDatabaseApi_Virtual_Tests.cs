@@ -164,9 +164,9 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
             var store = new Mock<TableSchemaMappingRepository>();
             var storeSchemas = new List<TableSchemaMapping>
             {
-                new TableSchemaMapping { TableName = "a" },
-                new TableSchemaMapping { TableName = "table1" },
-                new TableSchemaMapping { TableName = "b" },
+                new TableSchemaMapping { Name = "a" },
+                new TableSchemaMapping { Name = "table1" },
+                new TableSchemaMapping { Name = "b" },
             };
             store.Setup(x => x.SelectAll(api.DbType)).Returns(storeSchemas);
             store.Setup(x => x.GetColumns(api.DbType, It.IsAny<string>())).Returns(new List<DbTableColumn>());
@@ -263,7 +263,7 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
             {
                 new TableSchemaMapping
                 {
-                    TableName = "table1",
+                    Name = "table1",
                     Columns = new List<DbTableColumn>
                     {
                         new DbTableColumn { IsPrimaryKey = true, Name = "_id", DataType = "string" },

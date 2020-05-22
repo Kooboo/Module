@@ -230,7 +230,7 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
             table.Setup(x => x.get(It.IsAny<object>())).Returns(data.Object);
             api.Object.MockDb.Setup(x => x.GetTable(It.IsAny<string>())).Returns(table.Object);
 
-            var result = api.Object.GetEdit("table1", "3", new ApiCall());
+            var result = api.Object.GetEdit("table1", "3", new ApiCall() { WebSite = new Kooboo.Data.Models.WebSite() { Name = System.Guid.NewGuid().ToString() } });
 
             Assert.Collection(result,
                 x =>
@@ -382,7 +382,7 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
                 new DatabaseItemEdit { Name = "c1", Value = "c1_new" },
             };
 
-            var result = api.Object.AddData("table1", values, new ApiCall());
+            var result = api.Object.AddData("table1", values, new ApiCall() {  WebSite = new Kooboo.Data.Models.WebSite() {  Name= System.Guid.NewGuid().ToString()} });
 
             api.Protected().Verify("AddData",
                 Times.Once(),
@@ -435,16 +435,17 @@ namespace SqlEx.Module.Tests.RelationalDatabaseApi
             {
                 return MockDb.Object;
             }
+          
 
             protected override Type GetClrType(DatabaseItemEdit column)
             {
                 return typeof(object);
             }
 
-            //protected override ISchemaMappingRepository GetSchemaMappingRepository(ApiCall call)
-            //{
-            //    return MockRepo.Object;
-            //}
+            protected override TableSchemaMappingRepository GetSchemaMappingRepository(ApiCall call)
+            {
+                return MockRepo.Object;
+            }
 
             protected override Dictionary<string, List<DbTableColumn>> SyncSchema(IRelationalDatabase db, TableSchemaMappingRepository schemaRepository)
             {

@@ -1,26 +1,65 @@
 ﻿using Kooboo.Sites.Models;
+using System;
 using System.Collections.Generic;
 
 namespace SqlEx.Module.code.RelationalDatabase
 {
-    public class TableSchemaMapping : SiteObject
+    public class TableSchemaMapping : CoreObject
     {
-        private string _name;
-        public override string Name
+
+        public  TableSchemaMapping()
         {
-            get => _name ?? (_name = GetName(DbType, TableName));
-            set => _name = value;
+            this.ConstType = 84; 
         }
+
+        private Guid _id;
+        public override Guid Id
+        {
+            set { _id = value; }
+            get
+            {
+                if (_id == default(Guid))
+                {
+                    if (!string.IsNullOrEmpty(this.DbType) && !string.IsNullOrWhiteSpace(this.Name))
+                    {
+                        string unique = this.ConstType.ToString() + this.DbType + this.Name;  
+                        _id = Kooboo.Data.IDGenerator.GetId(unique);
+                    }
+              
+                }
+                return _id;
+            }
+        } 
 
         public string DbType { get; set; }
 
-        public string TableName { get; set; }
+        public override string Name { get; set; }
 
         public List<DbTableColumn> Columns { get; set; }
 
-        public static string GetName(string dbType, string tableName)
+        public static Guid GetId(string dbtype, string tablename)
         {
-            return $"{dbType}_{tableName}";
+
+            string unique = 84.ToString() + dbtype + tablename; 
+
+            return Kooboo.Data.IDGenerator.GetId(unique);
         }
+
+     
+
+        public override int GetHashCode()
+        {
+            string unique = ""; 
+            if (this.Columns !=null)
+            {
+                foreach (var item in this.Columns)
+                {
+                    unique += item.GetHashCode().ToString(); 
+                }
+            }
+
+            return Kooboo.Lib.Security.Hash.ComputeInt(unique); 
+        }
+
     }
 }

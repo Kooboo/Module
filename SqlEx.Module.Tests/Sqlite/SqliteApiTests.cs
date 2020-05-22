@@ -88,6 +88,9 @@ namespace SqlEx.Module.Tests.Sqlite
         public void UpdateTable_Should_Generate_Commnad_Text_Correct()
         {
             var db = new Mock<IRelationalDatabase>();
+            
+            
+
             var sqls = new[]
                 {
                     new { type = "table", name = "table1", sql = @"CREATE TABLE ""vb"" (
