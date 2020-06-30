@@ -42,7 +42,7 @@
   }
 
   BaseModel.prototype = {
-    executeGet: function(method, data, hideLoading, useSync) {
+    executeGet: function(method, data, hideLoading, useSync, hideError) {
       var self = this;
       var hideLoading = !!hideLoading && true;
       hideLoading && $(".page-loading").hide();
@@ -50,18 +50,18 @@
 
       return DataCache.getData(this.name, method, data, useSync)
         .fail(function(fail) {
-          handleRequestError(fail);
+          if (!hideError) handleRequestError(fail);
         })
         .always(function() {
           !hideLoading && loading.stop();
         })
         .done(function(res) {
           if (!res.success) {
-            Kooboo.handleFailMessages(res.messages);
+            if (!hideError) Kooboo.handleFailMessages(res.messages);
           }
         });
     },
-    executePost: function(method, data, hideLoading, extendParams, useSync) {
+    executePost: function(method, data, hideLoading, extendParams, useSync, hideError) {
       var self = this;
       var hideLoading = !!hideLoading && true;
       !hideLoading && loading.start();
@@ -74,7 +74,7 @@
 
       return DataCache.postData(this.name, method, data, extendParams, useSync)
         .fail(function(fail) {
-          handleRequestError(fail);
+          if (!hideError) handleRequestError(fail);
         })
         .always(function() {
           !hideLoading && loading.stop();
@@ -82,7 +82,7 @@
         .done(function(res) {
           // clean cache...
           if (!res.success) {
-            Kooboo.handleFailMessages(res.messages);
+            if (!hideError)  Kooboo.handleFailMessages(res.messages);
           } else {
             // data cached
           }
@@ -2279,9 +2279,9 @@
     el.dispatchEvent(e);
   };
 
-  Kooboo.isLocal=function(){
+  Kooboo.isLocal = function() {
     return !!document.getElementById("isLocal");
-  }
+  };
 
   Kooboo.GetCookie = function(key) {
     var value = null;
