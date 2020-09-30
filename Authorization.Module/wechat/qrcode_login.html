@@ -1,0 +1,65 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="utf-8" />
+    <script src="https://res.wx.qq.com/connect/zh_CN/htmledition/js/wxLogin.js"></script>
+    <script src="/_spa/Authorization.module/common/axios.min.js"></script>
+    <title>微信登录</title>
+    <style>
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="login_container"></div>
+
+
+    <script>
+
+        axios.get("/_api/__wechat_login/getsettings").then(rsp => {
+            var data = rsp.data;
+
+            if (!data.success) {
+                alert(data.messages.join(" "))
+                return
+            }
+
+            initWxLogin(data.model);
+        })
+
+        function initWxLogin(model) {
+            if (!model.appid) return alert("not appid")
+
+            new WxLogin({
+                id: "login_container",
+                appid: model.appid,
+                scope: "snsapi_login",
+                redirect_uri: getQueryString("redirect_uri"),
+                state: getQueryString("state"),
+                style: ""
+            });
+        }
+
+        function getQueryString(name) {
+            var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) {
+                return unescape(r[2]);
+            }
+            return null;
+        }
+
+    </script>
+</body>
+
+</html>

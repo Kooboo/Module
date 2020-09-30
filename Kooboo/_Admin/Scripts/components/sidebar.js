@@ -1,4 +1,4 @@
-﻿(function() {
+(function() {
   Vue.component("sidebar", {
     template: Kooboo.getTemplate("/_Admin/Scripts/components/sidebar.html"),
     props: {

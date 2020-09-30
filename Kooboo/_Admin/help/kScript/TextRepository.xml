@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <KScriptSetting>
   <Name>TextRepository</Name>
   <Description>The repository that contains Text Objects such as Layout and View</Description>

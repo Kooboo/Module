@@ -40,7 +40,7 @@ namespace PreviewServer
         static string[] _langs = new[] { "zh" };
         static string _koobooPath = "../../../../Kooboo";
         static string _slnPath = "../../../../";
-        static string _modulePath = "../../../../SqlEx.Module";
+        static string _modulePath = "../../../../Authorization.Module";
 
         public static void Load()
         {

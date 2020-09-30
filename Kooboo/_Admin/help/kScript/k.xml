@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <KScriptSetting>
   <Name>Kooboo JavaScript Extension</Name>
   <Description>kScript is a server side JavaScript engine that support full ES5 syntax, with an additional k object. Kooboo use kScript to write extensions like Job, Event Activity, Database operation, etc. You may embed KScript in your html file(view, layout, page) with a script engine=kscript tag,  or create external kScript file</Description>

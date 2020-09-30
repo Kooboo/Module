@@ -7,7 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\SqlEx.Module\SqlEx.Module.csproj" />
+    <ProjectReference Include="..\Authorization.Module\Authorization.Module.csproj" />
   </ItemGroup>
 
   <ItemGroup>

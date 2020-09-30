@@ -6,10 +6,10 @@ using System.Xml.Linq;
 readonly string[] exclude = new[] { ".dll", ".cs", ".csproj", "csproj.user" };
 var sourcePath = Path.GetFullPath("../");
 var koobooPath = Path.Combine(sourcePath, "Kooboo");
-var modulePath = Path.Combine(sourcePath, "SqlEx.Module");
+var modulePath = Path.Combine(sourcePath, "Authorization.Module");
 var publishPath = GetPublishPath();
 var zipDirPath = Path.Combine(publishPath, "..", "module");
-var zipFilePath = Path.Combine(publishPath, "..", "SqlEx.Module.zip");
+var zipFilePath = Path.Combine(publishPath, "..", "Authorization.Module.zip");
 var publishFiles = Directory.GetFiles(publishPath, "*.*", SearchOption.AllDirectories);
 
 var KoobooFiles = Directory.GetFiles(koobooPath, "*.*", SearchOption.AllDirectories)

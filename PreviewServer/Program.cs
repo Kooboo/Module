@@ -1,4 +1,4 @@
-﻿using Kooboo.Data;
+using Kooboo.Data;
 using Kooboo.IndexedDB;
 using Kooboo.Lib.Compatible;
 using Kooboo.Lib.Helper;

@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <KScriptSetting>
   <Name>Security</Name>
   <Description>Private MD5 and SHA1 encryption and a simple two way encrypt and decrypt function</Description>

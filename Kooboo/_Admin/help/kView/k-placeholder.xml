@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <ModelBase xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   <Name>k-placeholder</Name>
   <DisplayName>Used to mark an element as a placeholder/container in the layout. Components can be added into that placeholder from page designer.</DisplayName>

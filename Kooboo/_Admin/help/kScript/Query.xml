@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <KScriptSetting>
   <Name>Query</Name>
   <Description>string based query syntax to find records from kooboo site repository or database. It has the format of: [FieldName] [Comparer] [Value]

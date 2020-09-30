@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <KScriptSetting>
   <Name>BinaryRepository</Name>
   <Description>The repository that contains binary objects such as image or file</Description>

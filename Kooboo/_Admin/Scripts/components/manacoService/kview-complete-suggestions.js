@@ -86,11 +86,11 @@ var getKViewSuggestions = function () {
           documentation: "Replace the element with the value.",
           insertText: 'k-config="${1:}"'
       },
-          {
-              label: "k-version",
-              documentation: "k-version enable file browser cache versioning file name",
-              insertText: "k-version"
-          }
+    {
+        label: "k-data",
+        documentation: "query one item from database",
+        insertText: 'k-data="${1:alias} ${2:query}"'
+    },
     ];
     return suggestions;
 };

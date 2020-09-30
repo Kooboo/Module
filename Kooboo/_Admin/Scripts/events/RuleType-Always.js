@@ -1,4 +1,4 @@
-﻿(function() {
+(function() {
   var self;
   var baseComponent = Vue.component("events-ruletype-always", {
     template: "#RuleTemplate-Do",
