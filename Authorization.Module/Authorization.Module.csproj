@@ -44,6 +44,9 @@
     <Reference Include="Kooboo.Web">
       <HintPath>..\Kooboo\Kooboo.Web.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\Kooboo\Newtonsoft.Json.dll</HintPath>
+    </Reference>
   </ItemGroup>
 
   <ProjectExtensions><VisualStudio><UserProperties config_1json__JsonSchema="" /></VisualStudio></ProjectExtensions>
