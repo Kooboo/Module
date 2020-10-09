@@ -25,3 +25,36 @@ k.response.write(result)
 回调 api 地址为 http://huanent.site:8080/login
 
 扫码地址：http://huanent.site:8080/_spa/Authorization.module/wechat/qrcode_login.html?redirect_uri=http%3A%2F%2Fhuanent.site%3A8080%2Flogin&state=
+
+## JWT
+
+1. 进入站点->系统->配置->JetSetting 填写 jwt secret , exp 和 enableExp 选填
+
+- secret 符合 jwt 标准的加密字符串
+- exp 过期时间（秒） 例如设置 token30 秒过期 则填 30
+- enableExp 是否开始过期时间检测
+
+2. 生成 token
+
+```
+k.authorization.jwtEncode({
+    name:"xxx"
+})
+```
+
+3. 验证密钥
+
+```
+k.authorization.jwtDecode();
+
+or
+
+k.authorization.jwtDecode(token)
+
+// 返回值为json字符串
+// 成功示例：code始终为0
+// { "code": 0, "value": { "name": "xxx" } }
+// 失败示例： code始终为1
+// { "code": 1, "value": "Token has invalid signature" }
+
+```
