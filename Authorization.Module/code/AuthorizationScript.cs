@@ -5,6 +5,7 @@ using JWT;
 using JWT.Algorithms;
 using JWT.Exceptions;
 using JWT.Serializers;
+using Kooboo.Data.Attributes;
 using Kooboo.Data.Context;
 using Kooboo.Data.Interface;
 using Kooboo.Lib.Helper;
@@ -18,9 +19,10 @@ namespace Authorization.Module.code
 {
     public class AuthorizationScript : IkScript
     {
+        [KIgnore]
         public string Name => "Authorization";
 
-
+        [KIgnore]
         public RenderContext context { get; set; }
 
         #region Wechat
