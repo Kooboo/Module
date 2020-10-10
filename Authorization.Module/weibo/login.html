@@ -1,0 +1,36 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="utf-8" />
+    <script src="/_spa/Authorization.module/common/axios.min.js"></script>
+    <title>微博登录</title>
+</head>
+
+<body>
+    <div id="login_container"></div>
+
+
+    <script>
+
+        axios.get("/_api/__weibo_login/getsettings").then(rsp => {
+            var data = rsp.data;
+
+            if (!data.success) {
+                alert(data.messages.join(" "))
+                return
+            }
+
+            initWbLogin(data.model);
+        })
+
+        function initWbLogin(model) {
+            if (!model.appid) return alert("not appid")
+            location.href = "https://api.weibo.com/oauth2/authorize?client_id=166601591&response_type=code&redirect_uri=" + model.redirectUri
+        }
+
+    </script>
+</body>
+
+</html>

@@ -1,6 +1,6 @@
 ﻿using Authorization.Module.code.Jwt;
 using Authorization.Module.code.WeChatQrCode;
-using Jint.Native;
+using Authorization.Module.code.Weibo;
 using JWT;
 using JWT.Algorithms;
 using JWT.Exceptions;
@@ -13,7 +13,7 @@ using Kooboo.Sites.Extensions;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
+using System.Net;
 
 namespace Authorization.Module.code
 {
@@ -24,6 +24,8 @@ namespace Authorization.Module.code
 
         [KIgnore]
         public RenderContext context { get; set; }
+
+        private static readonly WebClient _webClient = new WebClient();
 
         #region Wechat
         [Description(@"
@@ -58,9 +60,9 @@ result:
         {
             if (string.IsNullOrWhiteSpace(code)) throw new Exception("code can't be empty");
             var settings = context.WebSite.SiteDb().CoreSetting.GetSetting<WeChatLoginSetting>();
-            var tokenString = HttpHelper.GetString($"https://api.weixin.qq.com/sns/oauth2/access_token?appid={settings.Appid}&secret={settings.Secret}&code={code}&grant_type=authorization_code");
+            var tokenString = _webClient.DownloadString($"https://api.weixin.qq.com/sns/oauth2/access_token?appid={settings.Appid}&secret={settings.Secret}&code={code}&grant_type=authorization_code");
             var token = JsonHelper.Deserialize<Dictionary<string, object>>(tokenString);
-            var userInfoString = HttpHelper.GetString($"https://api.weixin.qq.com/sns/userinfo?access_token={token["access_token"]}&openid={token["openid"]}");
+            var userInfoString = _webClient.DownloadString($"https://api.weixin.qq.com/sns/userinfo?access_token={token["access_token"]}&openid={token["openid"]}");
             var userInfo = JsonHelper.Deserialize<Dictionary<string, object>>(userInfoString);
 
 
@@ -218,5 +220,36 @@ error
 
         #endregion
 
+        #region Weibo
+        [Description(@"
+params code : weibo redirect code
+
+result: 
+{
+    token :{
+       ...
+    },
+    userInfo :{
+        ...
+    }
+}
+")]
+        public string Weibo(string code)
+        {
+            if (string.IsNullOrWhiteSpace(code)) throw new Exception("code can't be empty");
+            var settings = context.WebSite.SiteDb().CoreSetting.GetSetting<WeiboSetting>();
+            var tokenString = _webClient.UploadString($"https://api.weibo.com/oauth2/access_token?client_id={settings.Appid}&client_secret={settings.Secret}&grant_type=authorization_code&redirect_uri={settings.RedirectUri}&code={code}", "");
+            var token = JsonHelper.Deserialize<Dictionary<string, object>>(tokenString.ToString());
+            var userInfoString = HttpHelper.GetString($"https://api.weibo.com/2/users/show.json?access_token={token["access_token"]}&uid={token["uid"]}");
+            var userInfo = JsonHelper.Deserialize<Dictionary<string, object>>(userInfoString);
+
+
+            return JsonHelper.Serialize(new
+            {
+                token,
+                userInfo
+            });
+        }
+        #endregion
     }
 }

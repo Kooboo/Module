@@ -28,7 +28,7 @@ k.response.write(result)
 
 ## JWT
 
-1. 进入站点->系统->配置->JetSetting 填写 jwt secret , exp 和 enableExp 选填
+1. 进入站点->系统->配置->JwtSetting 填写 jwt secret , exp 和 enableExp 选填
 
 - secret 符合 jwt 标准的加密字符串
 - exp 过期时间（秒） 例如设置 token30 秒过期 则填 30
@@ -58,3 +58,15 @@ k.authorization.jwtDecode(token)
 // { "code": 1, "value": "Token has invalid signature" }
 
 ```
+
+## 微博
+
+1. 进入站点->系统->配置->WeiboLoginSetting 填写 appid secret redirectUri
+2. 新建 api（地址与回调地址相同）
+
+```
+var result = k.authorization.weibo(k.request.code)
+k.response.write(result)
+```
+
+3. 访问地址 [站点名称]/\_spa/Authorization.module/weibo/login.html
