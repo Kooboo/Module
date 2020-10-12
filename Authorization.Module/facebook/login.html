@@ -1,0 +1,47 @@
+﻿<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta charset="utf-8" />
+    <script src="/_spa/Authorization.module/common/axios.min.js"></script>
+    <title>Facebook</title>
+</head>
+
+<body>
+    <script>
+        axios.get("/_api/__facebook_login/getsettings").then(rsp => {
+            var data = rsp.data;
+
+            if (!data.success) {
+                alert(data.messages.join(" "))
+                return
+            }
+
+            initWbLogin(data.model);
+        })
+
+        function initWbLogin(model) {
+            if (!model.appid) return alert("not appid")
+            if (!model.redirectUri) return alert("not redirectUri")
+            var state = getQueryString("state");
+            var url = "https://www.facebook.com/v8.0/dialog/oauth?client_id=" + model.appid + "&redirect_uri=" + model.redirectUri
+            if (state) url += "&state=" + getQueryString("state")
+            if (model.scope) url += "&scope=" + model.scope
+            debugger
+            location.href = url;
+        }
+
+        function getQueryString(name) {
+            var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) {
+                return r[2];
+            }
+            return null;
+        }
+
+    </script>
+</body>
+
+</html>

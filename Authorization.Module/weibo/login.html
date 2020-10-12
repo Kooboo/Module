@@ -9,9 +9,6 @@
 </head>
 
 <body>
-    <div id="login_container"></div>
-
-
     <script>
 
         axios.get("/_api/__weibo_login/getsettings").then(rsp => {
@@ -27,7 +24,8 @@
 
         function initWbLogin(model) {
             if (!model.appid) return alert("not appid")
-            location.href = "https://api.weibo.com/oauth2/authorize?client_id=166601591&response_type=code&redirect_uri=" + model.redirectUri
+            if (!model.redirectUri) return alert("not redirectUri")
+            location.href = "https://api.weibo.com/oauth2/authorize?client_id=" + model.appid + "&response_type=code&redirect_uri=" + model.redirectUri
         }
 
     </script>

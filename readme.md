@@ -1,3 +1,10 @@
+# 支持列表
+
+- 微信
+- JWT
+- 微博
+- Facebook
+
 # 使用步骤
 
 请确保 Authorization.Module.zip 放置在 kooboo 的 modules 目录中。
@@ -69,4 +76,16 @@ var result = k.authorization.weibo(k.request.code)
 k.response.write(result)
 ```
 
-3. 访问地址 [站点名称]/\_spa/Authorization.module/weibo/login.html
+3. 访问地址 [网站域名]/\_spa/Authorization.module/weibo/login.html
+
+## Facebook
+
+1. 进入站点->系统->配置->FacebookLoginSetting 填写 appid secret redirectUri 和 scope(选填)
+2. 新建 api（地址与回调地址相同）
+
+```
+var result = k.authorization.facebook(k.request.code)
+k.response.write(result)
+```
+
+3. 访问地址 [网站域名]/\_spa/Authorization.module/facebook/login.html?state=[可选的负载数据]

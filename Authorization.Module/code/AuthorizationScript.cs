@@ -1,4 +1,5 @@
-﻿using Authorization.Module.code.Jwt;
+﻿using Authorization.Module.code.Facebook;
+using Authorization.Module.code.Jwt;
 using Authorization.Module.code.WeChatQrCode;
 using Authorization.Module.code.Weibo;
 using JWT;
@@ -251,5 +252,55 @@ result:
             });
         }
         #endregion
+
+        #region Facebook
+        [Description(@"
+params code : facebook redirect code
+params fields : facebook graph fields
+
+result: 
+{
+    token :{
+       ...
+    },
+    userInfo :{
+        ...
+    }
+}
+")]
+        public string Facebook(string code, string fields)
+        {
+            if (string.IsNullOrWhiteSpace(fields)) fields = "id,name,email,picture.type(large)";
+            if (string.IsNullOrWhiteSpace(code)) throw new Exception("code can't be empty");
+            var settings = context.WebSite.SiteDb().CoreSetting.GetSetting<FacebookSetting>();
+            var tokenString = _webClient.DownloadString($"https://graph.facebook.com/v8.0/oauth/access_token?client_id={settings.Appid}&redirect_uri={settings.RedirectUri}&client_secret={settings.Secret}&code={code}");
+            var token = JsonHelper.Deserialize<Dictionary<string, object>>(tokenString.ToString());
+            var userInfoString = HttpHelper.GetString($"https://graph.facebook.com/v8.0/me?access_token={token["access_token"]}&fields={fields}");
+            var userInfo = JsonHelper.Deserialize<Dictionary<string, object>>(userInfoString);
+
+
+            return JsonHelper.Serialize(new
+            {
+                token,
+                userInfo
+            });
+        }
+
+        [Description(@"
+params code : facebook redirect code
+
+result: 
+{
+    token :{
+       ...
+    },
+    userInfo :{
+        ...
+    }
+}
+")]
+        public string Facebook(string code) => Facebook(code, null);
+        #endregion
+
     }
 }
