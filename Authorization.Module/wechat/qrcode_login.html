@@ -35,10 +35,10 @@
                 return
             }
 
-            initWxLogin(data.model);
+            initLogin(data.model);
         })
 
-        function initWxLogin(model) {
+        function initLogin(model) {
             if (!model.appid) return alert("not appid")
 
             new WxLogin({

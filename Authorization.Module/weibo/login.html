@@ -19,10 +19,10 @@
                 return
             }
 
-            initWbLogin(data.model);
+            initLogin(data.model);
         })
 
-        function initWbLogin(model) {
+        function initLogin(model) {
             if (!model.appid) return alert("not appid")
             if (!model.redirectUri) return alert("not redirectUri")
             location.href = "https://api.weibo.com/oauth2/authorize?client_id=" + model.appid + "&response_type=code&redirect_uri=" + model.redirectUri

@@ -1,4 +1,5 @@
 ﻿using Authorization.Module.code.Facebook;
+using Authorization.Module.code.Google;
 using Authorization.Module.code.Jwt;
 using Authorization.Module.code.WeChatQrCode;
 using Authorization.Module.code.Weibo;
@@ -300,6 +301,40 @@ result:
 }
 ")]
         public string Facebook(string code) => Facebook(code, null);
+        #endregion
+
+        #region Google
+        //https://www.googleapis.com/userinfo/v2/me
+
+        [Description(@"
+params code : google redirect code
+
+result: 
+{
+    token :{
+       ...
+    },
+    userInfo :{
+        ...
+    }
+}
+")]
+        public string Google(string code)
+        {
+
+            if (string.IsNullOrWhiteSpace(code)) throw new Exception("code can't be empty");
+            var settings = context.WebSite.SiteDb().CoreSetting.GetSetting<GoogleSetting>();
+            var tokenString = _webClient.UploadString($"https://oauth2.googleapis.com/token?client_id={settings.Appid}&redirect_uri={settings.RedirectUri}&client_secret={settings.Secret}&code={code}&grant_type=authorization_code","");
+            var token = JsonHelper.Deserialize<Dictionary<string, object>>(tokenString.ToString());
+            var userInfoString = HttpHelper.GetString($"https://www.googleapis.com/userinfo/v2/me?access_token={token["access_token"]}");
+            var userInfo = JsonHelper.Deserialize<Dictionary<string, object>>(userInfoString);
+
+            return JsonHelper.Serialize(new
+            {
+                token,
+                userInfo
+            });
+        }
         #endregion
 
     }
