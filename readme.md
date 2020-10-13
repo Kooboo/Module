@@ -4,6 +4,7 @@
 - JWT
 - 微博
 - Facebook
+- google
 
 # 使用步骤
 
@@ -89,3 +90,15 @@ k.response.write(result)
 ```
 
 3. 访问地址 [网站域名]/\_spa/Authorization.module/facebook/login.html?state=[可选的负载数据]
+
+## Google
+
+1. 进入站点->系统->配置->GoogleLoginSetting 填写 appid secret redirectUri 和 scope(选填)
+2. 新建 api（地址与回调地址相同）
+
+```
+var result = k.authorization.google(k.request.code)
+k.response.write(result)
+```
+
+3. 访问地址 [网站域名]/\_spa/Authorization.module/google/login.html?state=[可选的负载数据]
