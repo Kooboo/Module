@@ -31,6 +31,10 @@ namespace Authorization.Module.code
 
         #region Wechat
         [Description(@"
+Pretreatment
+
+site=>system=>settings=>WeChatLoginSetting,set appid and secret
+##################
 params code : wechat redirect code
 
 result: 
@@ -57,6 +61,15 @@ result:
         ""unionid"": "" o6_bmasdasdsad6_2sgVt7hMZOPfL""
     }
 }
+##################
+Example
+//api
+var result = k.authorization.weChat(k.request.code);
+...save user info
+...return a token or set cookie
+
+//browser
+[domain]/_spa/Authorization.module/wechat/qrcode_login.html?redirect_uri=[redirect_uri]&state=[state]
 ")]
         public string WeChat(string code)
         {
@@ -78,6 +91,9 @@ result:
 
         #region Jwt
         [Description(@"
+Pretreatment
+site=>system=>settings=>JwtSetting,set jwtsecret exp and enableExp
+##################
 params claims : jwt claims
 
 {
@@ -87,6 +103,13 @@ params claims : jwt claims
 
 result: jwt token
 eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoiaHVhbmVudCIsImV4cCI6MTYwMjIxNTM4OH0.ZunonM2w-3PJURhW9eBD90zdnw9NCDDIZbCMM6Izsb4
+##################
+Example
+
+//encode
+k.authorization.jwtEncode({
+    name:""xxx""
+})
 ")]
         public string JwtEncode(IDictionary<string, object> claims)
         {
@@ -124,6 +147,11 @@ error
     code :1,
     value :""error message""
 }
+---------
+Example
+
+//decode
+var result= k.authorization.jwtDecode()
 ")]
         public string JwtDecode()
         {
@@ -154,6 +182,9 @@ error
         }
 
         [Description(@"
+Pretreatment
+site=>system=>settings=>JwtSetting,set jwtsecret exp and enableExp
+------------------
 params token : jwt token
 eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJuYW1lIjoiaHVhbmVudCIsImV4cCI6MTYwMjIxNTM4OH0.ZunonM2w-3PJURhW9eBD90zdnw9NCDDIZbCMM6Izsb4
 
@@ -173,6 +204,10 @@ error
     code :1,
     value :""error message""
 }
+---------
+Example
+
+var result= k.authorization.jwtDecode(token)
 ")]
         public string JwtDecode(string token)
         {
@@ -224,6 +259,10 @@ error
 
         #region Weibo
         [Description(@"
+Pretreatment
+
+site=>system=>settings=>WeiboLoginSetting,set appid secret and redirectUri
+##################
 params code : weibo redirect code
 
 result: 
@@ -235,6 +274,15 @@ result:
         ...
     }
 }
+##################
+Example
+//api
+var result = k.authorization.weibo(k.request.code);
+...save user info
+...return a token or set cookie
+
+//browser
+[domain]/_spa/Authorization.module/weibo/login.html
 ")]
         public string Weibo(string code)
         {
@@ -256,6 +304,10 @@ result:
 
         #region Facebook
         [Description(@"
+Pretreatment
+
+site=>system=>settings=>FacebookLoginSetting,set appid secret redirectUri and scope[option]
+##################
 params code : facebook redirect code
 params fields : facebook graph fields
 
@@ -268,6 +320,15 @@ result:
         ...
     }
 }
+##################
+Example
+//api
+var result = k.authorization.facebook(k.request.code,fields);
+...save user info
+...return a token or set cookie
+
+//browser
+[domain]/_spa/Authorization.module/facebook/login.html?state=[state]
 ")]
         public string Facebook(string code, string fields)
         {
@@ -288,6 +349,10 @@ result:
         }
 
         [Description(@"
+Pretreatment
+
+site=>system=>settings=>FacebookLoginSetting,set appid secret redirectUri and scope[option]
+##################
 params code : facebook redirect code
 
 result: 
@@ -299,6 +364,15 @@ result:
         ...
     }
 }
+##################
+Example
+//api
+var result = k.authorization.facebook(k.request.code);
+...save user info
+...return a token or set cookie
+
+//browser
+[domain]/_spa/Authorization.module/facebook/login.html?state=[state]
 ")]
         public string Facebook(string code) => Facebook(code, null);
         #endregion
@@ -307,6 +381,10 @@ result:
         //https://www.googleapis.com/userinfo/v2/me
 
         [Description(@"
+Pretreatment
+
+site=>system=>settings=>GoogleLoginSetting,set appid secret redirectUri and scope[option]
+##################
 params code : google redirect code
 
 result: 
@@ -318,6 +396,15 @@ result:
         ...
     }
 }
+##################
+Example
+//api
+var result = k.authorization.google(k.request.code);
+...save user info
+...return a token or set cookie
+
+//browser
+[domain]/_spa/Authorization.module/google/login.html?state=[state]
 ")]
         public string Google(string code)
         {
