@@ -86,6 +86,21 @@ var getKViewSuggestions = function () {
           documentation: "Replace the element with the value.",
           insertText: 'k-config="${1:}"'
       },
+     {
+         label: "k-localcache",
+         documentation: "load external resource into local machine cache.",
+         insertText: 'k-localcache="${1:}"'
+     },
+          {
+              label: "k-sys-mobile",
+              documentation: "when user agaent is a mobile device",
+              insertText: 'k-sys-mobile'
+          },
+         {
+             label: "k-sys-desktop",
+             documentation: "when user agent is a desktop",
+             insertText: 'k-sys-desktop'
+         },
     {
         label: "k-data",
         documentation: "query one item from database",

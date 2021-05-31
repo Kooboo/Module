@@ -181,7 +181,6 @@
       return url;
     },
   };
-
   //view
   function View() {
     this.name = "View";
@@ -203,6 +202,30 @@
     };
   }
   extend(View, BaseModel);
+
+  //Authentication
+  function Authentication() {
+    this.name = "Authentication";
+
+    this.getTypes = function () {
+      return this.executeGet("GetTypes");
+    };
+  }
+  extend(Authentication, BaseModel);
+
+  //CssOptimization
+  function CssOptimization() {
+    this.name = "CssOptimization";
+  }
+
+  extend(CssOptimization, BaseModel);
+
+  //CodeSearch
+  function CodeSearch() {
+    this.name = "CodeSearch";
+  }
+
+  extend(CodeSearch, BaseModel);
 
   //page
   function Page() {
@@ -426,6 +449,10 @@
 
     this.clusterList = function (para) {
       return this.executeGet("ClusterList", para);
+    };
+
+    this.GetLighthouseItems = function () {
+      return this.executeGet("GetLighthouseItems");
     };
 
     this.export = function (para) {
@@ -1837,6 +1864,9 @@
     Url: new Url(),
     View: new View(),
     SqlLog: new SqlLog(),
+    Authentication: new Authentication(),
+    CssOptimization: new CssOptimization(),
+    CodeSearch: new CodeSearch(),
   };
   wind.Kooboo.TextContent = new TextContent();
 

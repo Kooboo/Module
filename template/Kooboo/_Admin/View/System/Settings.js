@@ -36,6 +36,8 @@ $(function () {
           enableJsCssBrowerCache: true,
           enableImageBrowserCache: false,
           enableVideoBrowserCache: false,
+          enableLighthouseOptimization: false,
+          lighthouseSettingsJson: "[]",
           enableSPA: false,
           imageCacheDays: 1,
           enableDiskSync: false,
@@ -49,7 +51,7 @@ $(function () {
           enableLocationRedirect: false,
           diskSyncFolder: "",
           enableCORS: true,
-          previewUrl: ""
+          previewUrl: "",
         },
         loading: true,
         domains: [],
@@ -60,6 +62,10 @@ $(function () {
         _clusters: [],
         showError: false,
         showCustomServerModal: false,
+        showLighthouseModal: false,
+        lighthouseItems: [],
+        lighthouseItemsBinding: [],
+        lighthouseSettings: [],
       };
     },
     mounted: function () {
@@ -67,10 +73,21 @@ $(function () {
         $.when(
           Kooboo.Site.getCultures(),
           Kooboo.Site.Langs(),
-          Kooboo.Site.getTypes()
-        ).then(function (cultureLists, defaultCulture, siteTypes) {
+          Kooboo.Site.getTypes(),
+          Kooboo.Site.GetLighthouseItems()
+        ).then(function (
+          cultureLists,
+          defaultCulture,
+          siteTypes,
+          lighthouseItems
+        ) {
           self.loading = false;
           var model = response.model;
+
+          if (model.lighthouseSettingsJson) {
+            self.lighthouseSettings = JSON.parse(model.lighthouseSettingsJson);
+          }
+
           // console.log(model);
           // automapping
           _.keys(self.model).forEach(function (key) {
@@ -81,6 +98,8 @@ $(function () {
           self.customSettingArray = Kooboo.objToArr(model.customSettings);
           self.siteTypes = Kooboo.objToArr(siteTypes[0].model);
           self.cultures = cultureLists[0].model;
+          self.lighthouseItems = lighthouseItems[0].model;
+
           for (var cul in defaultCulture[0].model.cultures) {
             self.langs.push({
               key: cul,
@@ -282,6 +301,71 @@ $(function () {
         });
       },
       //#endregion
+      onShowLighthouseModal: function () {
+        var self = this;
+        var lighthouseItemsCopy = JSON.parse(
+          JSON.stringify(self.lighthouseItems)
+        );
+
+        for (var i = 0; i < lighthouseItemsCopy.length; i++) {
+          var lighthouseItem = lighthouseItemsCopy[i];
+
+          var lighthouseSetting = self.lighthouseSettings.filter(function (f) {
+            return f.name == lighthouseItem.name;
+          })[0];
+
+          if (lighthouseSetting) {
+            lighthouseItem.enable = lighthouseSetting.enable;
+          } else lighthouseItem.enable = true;
+
+          if (lighthouseItem.setting) {
+            var settingValue = {};
+
+            if (lighthouseSetting) {
+              settingValue = lighthouseSetting.setting;
+            }
+
+            for (var j = 0; j < lighthouseItem.setting.length; j++) {
+              var setting = lighthouseItem.setting[j];
+              if (settingValue[setting.name])
+                setting.value = settingValue[setting.name];
+            }
+          }
+        }
+
+        self.lighthouseItemsBinding = lighthouseItemsCopy;
+        self.showLighthouseModal = true;
+      },
+      onLighthouseSave: function () {
+        var self = this;
+        self.lighthouseSettings = [];
+        for (var i = 0; i < self.lighthouseItemsBinding.length; i++) {
+          var bindingItem = self.lighthouseItemsBinding[i];
+          var lighthouseSetting = {
+            name: bindingItem.name,
+            enable: bindingItem.enable,
+            setting: null,
+          };
+
+          if (bindingItem.setting) {
+            lighthouseSetting.setting = {};
+
+            for (var j = 0; j < bindingItem.setting.length; j++) {
+              var bindingItemSetting = bindingItem.setting[j];
+              lighthouseSetting.setting[bindingItemSetting.name] =
+                bindingItemSetting.value;
+            }
+          }
+
+          self.lighthouseSettings.push(lighthouseSetting);
+        }
+
+        self.model.lighthouseSettingsJson = JSON.stringify(
+          self.lighthouseSettings
+        );
+
+        self.showLighthouseModal = false;
+      },
     },
   });
 });

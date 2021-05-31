@@ -1343,4 +1343,12 @@
   <key id="SQL logs">SQL logs</key>
   <key id="Enable Sql Log">Enable Sql Log</key>
   <key id="Enable CORS">Enable CORS</key>
+  <key id="Authentication">Authentication</key>
+  <key id="Matcher">Matcher</key>
+  <key id="Cache">Cache</key>
+  <key id="Minutes">Minutes</key>
+  <key id="Enable cache">Enable cache</key>
+  <key id="Cache by version">Cache by version</key>
+  <key id="Enable Lighthouse optimization">Enable Lighthouse optimization</key>
+  <key id="CSS optimization">CSS optimization</key>
 </Lang>

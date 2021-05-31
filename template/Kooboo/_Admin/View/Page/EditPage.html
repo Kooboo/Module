@@ -241,6 +241,45 @@
                         </div>
                       </div>
                     </div>
+                    <div>
+                      <div class="panel panel-default">
+                        <div
+                          class="panel-heading clickable"
+                          data-toggle="collapse"
+                          data-target="#J_Setting_Cache"
+                        >
+                          <h4 class="panel-title">Cache</h4>
+                        </div>
+                        <div
+                          id="J_Setting_Cache"
+                          class="panel-collapse collapse"
+                        >
+                          <div class="panel-body">
+                            <div style="display: flex;align-items: center;margin: 8px 0;">
+                              <label class="control-label"><span>Enable cache</span></label>
+                              <div style="flex: 1;"></div>
+                              <kb-switch v-model="enableCache"></kb-switch>
+                            </div>
+                            <div style="display: flex;align-items: center;margin: 8px 0;" v-if="enableCache">
+                              <label class="control-label"><span>Cache by version</span></label>
+                              <div style="flex: 1;"></div>
+                              <kb-switch v-model="cacheByVersion" ></kb-switch>
+                            </div>
+                            <div v-if="enableCache&&!cacheByVersion">
+                              <span style="display: block;padding: 5px;">Time</span>
+                              <div class="input-group" >
+                                <input class="form-control" type="number" v-model="cacheMinutes" />
+                                <div  class="input-group-addon">Minutes</div>
+                              </div>
+                            </div>
+                            <div v-if="enableCache">
+                              <span style="display: block;padding: 5px;">Cache query keys</span>
+                              <input class="form-control"  v-model="cacheQueryKeys" placeholder='Example: category,page,index' />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </section>
               </div>
@@ -329,10 +368,13 @@
       "/_Admin/Scripts/pageEditor/widgets/html-meta.js",
       "/_Admin/Scripts/layoutEditor/components/style-script.js",
       "/_Admin/Scripts/layoutEditor/components/KBFrame.js",
-      "/_Admin/Scripts/lib/js-beautify/lib/beautify-html.js"
+      "/_Admin/Scripts/lib/js-beautify/lib/beautify-html.js",
+      "/_Admin/Scripts/lib/bootstrap-switch/bootstrap-switch.min.js",
+      "/_Admin/Scripts/components/kbSwitch.js"
     ]);
     Kooboo.loadCSS([
-      "/_Admin/Styles/bootstrap-editable/css/bootstrap-editable.css"
+      "/_Admin/Styles/bootstrap-editable/css/bootstrap-editable.css",
+      "/_Admin/Scripts/lib/bootstrap-switch/bootstrap-switch.min.css"
     ]);
   })();
 
@@ -362,7 +404,11 @@
           isMetaChanged: false,
           isUrlChanged: false,
           isBodyChanged: false,
-          isSaveAndReturn: false
+          isSaveAndReturn: false,
+          enableCache:false,
+          cacheByVersion:false,
+          cacheMinutes:3,
+          cacheQueryKeys:""
         };
       },
       computed: {
@@ -448,7 +494,10 @@
             scripts: scriptList,
             scriptGroup: scriptGroupList
           };
-
+          self.enableCache=page.model.enableCache;
+          self.cacheByVersion=page.model.cacheByVersion;
+          self.cacheMinutes=page.model.cacheMinutes||3;
+          self.cacheQueryKeys=page.model.cacheQueryKeys||"";
           self.multiLangs = langs[0].model;
           self.pageContent = page.model.body || "";
           self.setHTML(self.pageContent, function() {
@@ -482,6 +531,10 @@
                 : self.pageContent;
             res["name"] = self.name;
             res["id"] = self.pageId;
+            res["enableCache"] = self.enableCache;
+            res["cacheByVersion"] = self.cacheByVersion;
+            res["cacheMinutes"] = self.cacheMinutes;
+            res["cacheQueryKeys"] = self.cacheQueryKeys;
             self.submitData = res;
 
             if (self.isSaveAndReturn) {

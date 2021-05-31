@@ -1343,4 +1343,12 @@
   <key id="SQL logs">SQL 日志</key>
   <key id="Enable Sql Log">启用 SQL 日志</key>
   <key id="Enable CORS">启用 CORS</key>
+  <key id="Authentication">身份认证</key>
+  <key id="Matcher">匹配器</key>
+  <key id="Cache">缓存</key>
+  <key id="Minutes">分钟</key>
+  <key id="Enable cache">启用缓存</key>
+  <key id="Cache by version">版本缓存</key>
+  <key id="Enable Lighthouse optimization">启用 Lighthouse 优化</key>
+  <key id="CSS optimization">CSS 优化</key>
 </Lang>
